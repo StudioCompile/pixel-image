@@ -163,6 +163,17 @@
     box-shadow: inset 0 0 0 1px #000000;
     z-index: 3;
   }
+  .cell.start-marker {
+    outline: 3px solid var(--accent);
+    outline-offset: -3px;
+    z-index: 4;
+  }
+  .cell.start-marker::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 0 5px rgba(185, 28, 28, 0.35);
+  }
 
   .placeholder { padding: 70px 20px; text-align: center; color: #a6a8ab; font-size: 14px; }
 
@@ -201,36 +212,66 @@
 
   .pip-idle-bar {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 14px;
+    flex-direction: column;
+    gap: 8px;
     padding: 10px 14px;
     border-bottom: 1px solid var(--line);
     flex-shrink: 0;
     font-size: 12px;
   }
+  .pip-idle-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
   .pip-idle-info { color: var(--ink-soft); }
 
-  .dir-picker { display: flex; align-items: center; gap: 6px; }
-  .dir-picker-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); margin-right: 2px; }
-  .dir-btn {
-    width: 30px;
-    height: 30px;
+  .start-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 9px;
+    border: 1px solid #cfd1d4;
+    border-radius: 6px;
+    background: #fafafa;
+  }
+  .start-indicator.picked { border-color: var(--accent); background: #fdf1f1; }
+  .start-indicator-text { color: var(--ink-soft); }
+  .start-indicator.picked .start-indicator-text { color: var(--accent); font-weight: 600; }
+  .start-clear-btn {
+    width: 18px;
+    height: 18px;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--paper);
-    color: var(--ink);
-    border: 1px solid #cfd1d4;
-    border-radius: 6px;
-    font-size: 14px;
+    background: transparent;
+    color: var(--ink-soft);
+    border: none;
+    border-radius: 50%;
+    font-size: 11px;
     cursor: pointer;
   }
-  .dir-btn:hover { background: #f2f2f3; }
-  .dir-btn.selected { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .start-clear-btn:hover { background: #e6e6e7; color: var(--ink); }
 
-  .pip-idle-bar .accent-btn { margin-left: auto; padding: 8px 14px; font-size: 12px; }
+  .dir-picker { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .dir-picker-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); margin-right: 2px; }
+  .dir-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    background: var(--ink);
+    color: #fff;
+    border: 1px solid var(--ink);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .dir-btn:hover { background: #2a2d33; }
+  .dir-btn .glyph { font-size: 14px; }
 
   /* ---------------- auto mode click-to-copy overlay ---------------- */
 
@@ -356,7 +397,7 @@
 
 <div class="app-header">
   <h1>Pixel Grid</h1>
-  <span>image → click-to-copy color grid</span>
+  <span>image → click-to-copy color grid, pop it out and let auto mode do the counting</span>
 </div>
 
 <div id="resumeBannerSlot"></div>
@@ -424,7 +465,8 @@
   // the order auto mode steps through, derived from allCells + the chosen start direction
   let autoSequence = [];
 
-  let direction = 'top'; // 'top' | 'bottom' | 'left' | 'right'
+  let direction = 'down'; // 'down' | 'up' | 'right' | 'left'
+  let startCell = null; // a cell from allCells, or null for the default edge
   let autoModeEnabled = false;
   let autoPointer = -1;
   let currentHex = null;
@@ -525,33 +567,50 @@
 
   // ---------- auto mode ordering ----------
 
-  function isRowDirection() { return direction === 'top' || direction === 'bottom'; }
+  function isRowDirection() { return direction === 'down' || direction === 'up'; }
 
+  // Builds the traversal order from the picked start block (or a grid edge, if
+  // none was picked) continuing in the chosen direction. Rows/columns on the far
+  // side of the start line are left out entirely — that's what lets you resume
+  // partway through a grid you already started elsewhere.
   function computeAutoSequence() {
-    const seq = allCells.slice();
-    if (direction === 'top') {
-      seq.sort((a, b) => (+a.dataset.gy - +b.dataset.gy) || (+a.dataset.gx - +b.dataset.gx));
-    } else if (direction === 'bottom') {
-      seq.sort((a, b) => (+b.dataset.gy - +a.dataset.gy) || (+a.dataset.gx - +b.dataset.gx));
-    } else if (direction === 'left') {
-      seq.sort((a, b) => (+a.dataset.gx - +b.dataset.gx) || (+a.dataset.gy - +b.dataset.gy));
-    } else { // right
-      seq.sort((a, b) => (+b.dataset.gx - +a.dataset.gx) || (+a.dataset.gy - +b.dataset.gy));
+    const gridW = gridDims.w, gridH = gridDims.h;
+    const seq = [];
+    if (isRowDirection()) {
+      const startRow = startCell ? +startCell.dataset.gy : (direction === 'down' ? 0 : gridH - 1);
+      const rows = [];
+      if (direction === 'down') { for (let y = startRow; y < gridH; y++) rows.push(y); }
+      else { for (let y = startRow; y >= 0; y--) rows.push(y); }
+      const byRow = new Map();
+      allCells.forEach(c => {
+        const y = +c.dataset.gy;
+        if (!byRow.has(y)) byRow.set(y, []);
+        byRow.get(y).push(c);
+      });
+      rows.forEach(y => {
+        const rowCells = (byRow.get(y) || []).slice().sort((a, b) => +a.dataset.gx - +b.dataset.gx);
+        seq.push(...rowCells);
+      });
+    } else {
+      const startCol = startCell ? +startCell.dataset.gx : (direction === 'right' ? 0 : gridW - 1);
+      const cols = [];
+      if (direction === 'right') { for (let x = startCol; x < gridW; x++) cols.push(x); }
+      else { for (let x = startCol; x >= 0; x--) cols.push(x); }
+      const byCol = new Map();
+      allCells.forEach(c => {
+        const x = +c.dataset.gx;
+        if (!byCol.has(x)) byCol.set(x, []);
+        byCol.get(x).push(c);
+      });
+      cols.forEach(x => {
+        const colCells = (byCol.get(x) || []).slice().sort((a, b) => +a.dataset.gy - +b.dataset.gy);
+        seq.push(...colCells);
+      });
     }
     return seq;
   }
 
   function lineKeyOf(cell) { return isRowDirection() ? cell.dataset.gy : cell.dataset.gx; }
-
-  function remainingInLine(pointerIdx) {
-    const key = lineKeyOf(autoSequence[pointerIdx]);
-    let remaining = 0;
-    for (let i = pointerIdx + 1; i < autoSequence.length; i++) {
-      if (lineKeyOf(autoSequence[i]) !== key) break;
-      remaining++;
-    }
-    return remaining;
-  }
 
   // ---------- stepping through cells ----------
 
@@ -610,6 +669,7 @@
   function startAuto() {
     if (allCells.length === 0 || !pipWindow) return;
     removePipIdleBar();
+    if (startCell) startCell.classList.remove('start-marker');
     autoSequence = computeAutoSequence();
     const keepProgress = autoSequence.some(c => c.classList.contains('used'));
     autoPointer = keepProgress ? autoSequence.findIndex(c => !c.classList.contains('used')) : 0;
@@ -622,6 +682,18 @@
     activateCell(autoSequence[autoPointer]);
     attachWatcher(pipWindow);
     startLiveTimer();
+  }
+
+  // clears progress for the current run only (the cells in autoSequence) and
+  // jumps back to its first cell — the start block and direction stay the same
+  function restartAuto() {
+    if (!autoModeEnabled) return;
+    autoSequence.forEach(c => c.classList.remove('used', 'current', 'next-preview'));
+    autoPointer = 0;
+    currentHex = null;
+    previousHex = null;
+    lastLineKey = null;
+    activateCell(autoSequence[0]);
   }
 
   // stops auto mode and returns the popup to its idle state (grid + start controls).
@@ -739,6 +811,12 @@
     backBtn.textContent = '↩';
     backBtn.title = 'Undo';
 
+    const restartBtn = doc.createElement('button');
+    restartBtn.className = 'auto-mini-btn';
+    restartBtn.type = 'button';
+    restartBtn.textContent = '⟲';
+    restartBtn.title = 'Restart this run from the beginning';
+
     const closeBtn = doc.createElement('button');
     closeBtn.className = 'auto-mini-btn close';
     closeBtn.type = 'button';
@@ -750,6 +828,7 @@
     header.appendChild(spacer);
     header.appendChild(soundBtn);
     header.appendChild(backBtn);
+    header.appendChild(restartBtn);
     header.appendChild(closeBtn);
 
     const clickArea = doc.createElement('div');
@@ -779,6 +858,7 @@
       updateOverlay();
     });
     backBtn.addEventListener('click', goBack);
+    restartBtn.addEventListener('click', restartAuto);
     closeBtn.addEventListener('click', () => stopAuto());
     saveBtn.addEventListener('click', () => { saveSession(); stopAuto(); });
 
@@ -815,6 +895,10 @@
 
   // ---------- popup idle controls (grid visible, auto mode not running) ----------
 
+  // Two-step flow: click any block below to mark where auto mode should pick
+  // up (handled by selectStartCell, wired on the cells themselves), then pick
+  // a direction here to begin. Skipping the block click just starts from the
+  // matching edge.
   function ensurePipIdleBar() {
     if (!pipWindow) return;
     removePipIdleBar();
@@ -822,49 +906,84 @@
     const bar = doc.createElement('div');
     bar.className = 'pip-idle-bar';
 
+    const topRow = doc.createElement('div');
+    topRow.className = 'pip-idle-row';
+
     const info = doc.createElement('span');
     info.className = 'pip-idle-info';
     info.textContent = `${gridDims.w} × ${gridDims.h} — ${allCells.length} squares`;
+
+    const startIndicator = doc.createElement('div');
+    startIndicator.className = 'start-indicator' + (startCell ? ' picked' : '');
+    const startText = doc.createElement('span');
+    startText.className = 'start-indicator-text';
+    startText.textContent = startCell
+      ? `Start block: col ${+startCell.dataset.gx + 1}, row ${+startCell.dataset.gy + 1}`
+      : 'Click a block to set the start point (optional)';
+    startIndicator.appendChild(startText);
+    if (startCell) {
+      const clearBtn = doc.createElement('button');
+      clearBtn.className = 'start-clear-btn';
+      clearBtn.type = 'button';
+      clearBtn.textContent = '✕';
+      clearBtn.title = 'Clear start block';
+      clearBtn.addEventListener('click', () => {
+        startCell.classList.remove('start-marker');
+        startCell = null;
+        ensurePipIdleBar();
+      });
+      startIndicator.appendChild(clearBtn);
+    }
+
+    topRow.appendChild(info);
+    topRow.appendChild(startIndicator);
+
+    const dirRow = doc.createElement('div');
+    dirRow.className = 'pip-idle-row';
 
     const dirPicker = doc.createElement('div');
     dirPicker.className = 'dir-picker';
     const dirLabel = doc.createElement('span');
     dirLabel.className = 'dir-picker-label';
-    dirLabel.textContent = 'Start from';
+    dirLabel.textContent = 'Then choose a direction';
     dirPicker.appendChild(dirLabel);
 
     const dirs = [
-      { key: 'top', glyph: '↓', title: 'Start at the top' },
-      { key: 'bottom', glyph: '↑', title: 'Start at the bottom' },
-      { key: 'left', glyph: '→', title: 'Start at the left' },
-      { key: 'right', glyph: '←', title: 'Start at the right' }
+      { key: 'down', glyph: '↓', label: 'Down' },
+      { key: 'up', glyph: '↑', label: 'Up' },
+      { key: 'right', glyph: '→', label: 'Right' },
+      { key: 'left', glyph: '←', label: 'Left' }
     ];
-    const dirBtns = [];
     dirs.forEach(d => {
       const b = doc.createElement('button');
       b.type = 'button';
-      b.className = 'dir-btn' + (direction === d.key ? ' selected' : '');
-      b.textContent = d.glyph;
-      b.title = d.title;
+      b.className = 'dir-btn';
+      const glyph = doc.createElement('span');
+      glyph.className = 'glyph';
+      glyph.textContent = d.glyph;
+      b.appendChild(glyph);
+      b.appendChild(doc.createTextNode(d.label));
       b.addEventListener('click', () => {
         direction = d.key;
-        dirBtns.forEach(x => x.el.classList.toggle('selected', x.key === d.key));
+        startAuto();
       });
-      dirBtns.push({ key: d.key, el: b });
       dirPicker.appendChild(b);
     });
 
-    const startBtn = doc.createElement('button');
-    startBtn.className = 'accent-btn';
-    startBtn.type = 'button';
-    startBtn.textContent = 'Start Auto Mode';
-    startBtn.addEventListener('click', () => startAuto());
+    dirRow.appendChild(dirPicker);
 
-    bar.appendChild(info);
-    bar.appendChild(dirPicker);
-    bar.appendChild(startBtn);
+    bar.appendChild(topRow);
+    bar.appendChild(dirRow);
     doc.body.insertBefore(bar, doc.body.firstChild);
     pipIdleBarEl = bar;
+  }
+
+  // marks a clicked block as the start point for the next auto-mode run
+  function selectStartCell(cell) {
+    if (startCell) startCell.classList.remove('start-marker');
+    startCell = cell;
+    startCell.classList.add('start-marker');
+    ensurePipIdleBar();
   }
 
   function removePipIdleBar() {
@@ -1031,6 +1150,7 @@
     } catch (err) { return null; }
 
     allCells = [];
+    startCell = null; // a fresh grid means any previously picked start block no longer applies
     gridDims = { w: gridW, h: gridH };
 
     const gridWrap = document.createElement('div');
@@ -1061,7 +1181,11 @@
 
         cell.addEventListener('click', () => {
           if (autoModeEnabled) return; // in auto mode, only the overlay click area advances
-          handleManualCellClick(cell);
+          if (pipWindow && cell.ownerDocument === pipWindow.document) {
+            selectStartCell(cell); // in the popup, a click before auto starts picks the start block
+          } else {
+            handleManualCellClick(cell);
+          }
         });
         allCells.push(cell);
 
