@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pixel Grid Color Picker</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+    background: #ffffff;
+    color: #111111;
+  }
+
+  .topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #dddddd;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .field label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #666666;
+  }
+
+  input[type="file"],
+  input[type="number"] {
+    border: 1px solid #cccccc;
+    padding: 8px 10px;
+    font-size: 14px;
+    background: #ffffff;
+    color: #111111;
+    outline: none;
+  }
+
+  input[type="number"] {
+    width: 90px;
+  }
+
+  input[type="file"]::file-selector-button {
+    border: 1px solid #111111;
+    background: #ffffff;
+    color: #111111;
+    padding: 6px 10px;
+    margin-right: 10px;
+    cursor: pointer;
+  }
+
+  input[type="file"]::file-selector-button:hover {
+    background: #111111;
+    color: #ffffff;
+  }
+
+  button {
+    border: 1px solid #111111;
+    background: #111111;
+    color: #ffffff;
+    padding: 10px 18px;
+    font-size: 14px;
+    cursor: pointer;
+    height: fit-content;
+    align-self: flex-end;
+  }
+
+  button:hover {
+    background: #333333;
+  }
+
+  button:disabled {
+    background: #cccccc;
+    border-color: #cccccc;
+    cursor: not-allowed;
+  }
+
+  #pipBtn {
+    background: #ffffff;
+    color: #111111;
+  }
+
+  #pipBtn:hover:not(:disabled) {
+    background: #111111;
+    color: #ffffff;
+  }
+
+  #pipBtn:disabled {
+    background: #ffffff;
+    color: #cccccc;
+    border-color: #cccccc;
+  }
+
+  .info {
+    font-size: 13px;
+    color: #666666;
+    margin-left: auto;
+  }
+
+  .stage {
+    padding: 20px;
+  }
+
+  .grid-wrap {
+    display: inline-block;
+    border: 1px solid #dddddd;
+  }
+
+  .grid {
+    display: grid;
+    line-height: 0;
+  }
+
+  .cell {
+    position: relative;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+  }
+
+  .cell:hover::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    outline: 2px solid #111111;
+    outline-offset: -2px;
+  }
+
+  .cell.used {
+    filter: grayscale(1) brightness(1.15);
+  }
+
+  .cell.used::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.35);
+  }
+
+  .cell.used::after {
+    content: "✓";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    color: #111111;
+  }
+
+  .placeholder {
+    padding: 60px 20px;
+    text-align: center;
+    color: #999999;
+    font-size: 14px;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #111111;
+    color: #ffffff;
+    padding: 10px 18px;
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="field">
+    <label for="imageInput">Image</label>
+    <input type="file" id="imageInput" accept="image/*">
+  </div>
+
+  <div class="field">
+    <label for="widthInput">Grid width (blocks)</label>
+    <input type="number" id="widthInput" value="32" min="1" max="256">
+  </div>
+
+  <div class="field">
+    <label for="heightInput">Grid height (blocks)</label>
+    <input type="number" id="heightInput" value="32" min="1" max="256">
+  </div>
+
+  <div class="field">
+    <label for="cellSizeInput">Square size (px)</label>
+    <input type="number" id="cellSizeInput" value="22" min="4" max="64">
+  </div>
+
+  <button id="generateBtn" disabled>Generate</button>
+  <button id="pipBtn" disabled>Pop out</button>
+
+  <div class="info" id="infoText"></div>
+</div>
+
+<div class="stage" id="stage">
+  <div class="placeholder">Upload an image, set your grid size, and click Generate.</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<canvas id="workCanvas" style="display:none;"></canvas>
+
+<script>
+  const imageInput = document.getElementById('imageInput');
+  const widthInput = document.getElementById('widthInput');
+  const heightInput = document.getElementById('heightInput');
+  const cellSizeInput = document.getElementById('cellSizeInput');
+  const generateBtn = document.getElementById('generateBtn');
+  const pipBtn = document.getElementById('pipBtn');
+  const stage = document.getElementById('stage');
+  const infoText = document.getElementById('infoText');
+  const toast = document.getElementById('toast');
+  const workCanvas = document.getElementById('workCanvas');
+  const ctx = workCanvas.getContext('2d', { willReadFrequently: true });
+
+  let loadedImage = null;
+  let currentGridWrap = null;
+  let pipWindow = null;
+
+  if (!('documentPictureInPicture' in window)) {
+    pipBtn.title = 'Picture-in-picture is not supported in this browser (try Chrome or Edge).';
+  }
+
+  imageInput.addEventListener('change', () => {
+    const file = imageInput.files[0];
+    if (!file) {
+      loadedImage = null;
+      generateBtn.disabled = true;
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        loadedImage = img;
+        generateBtn.disabled = false;
+
+        // suggest a height that preserves aspect ratio based on current width
+        const w = parseInt(widthInput.value, 10) || 32;
+        const ratio = img.height / img.width;
+        heightInput.value = Math.max(1, Math.round(w * ratio));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  widthInput.addEventListener('change', () => {
+    if (!loadedImage) return;
+    const w = parseInt(widthInput.value, 10) || 32;
+    const ratio = loadedImage.height / loadedImage.width;
+    heightInput.value = Math.max(1, Math.round(w * ratio));
+  });
+
+  function rgbToHex(r, g, b) {
+    return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove('show'), 1200);
+  }
+
+  generateBtn.addEventListener('click', () => {
+    if (!loadedImage) return;
+
+    const gridW = Math.max(1, Math.min(256, parseInt(widthInput.value, 10) || 32));
+    const gridH = Math.max(1, Math.min(256, parseInt(heightInput.value, 10) || 32));
+    const cellSize = Math.max(4, Math.min(64, parseInt(cellSizeInput.value, 10) || 22));
+
+    // downsample the image to gridW x gridH so each pixel = one cell's average color
+    workCanvas.width = gridW;
+    workCanvas.height = gridH;
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(loadedImage, 0, 0, gridW, gridH);
+
+    let pixelData;
+    try {
+      pixelData = ctx.getImageData(0, 0, gridW, gridH).data;
+    } catch (err) {
+      stage.innerHTML = '<div class="placeholder">Could not read image data (possibly a cross-origin image).</div>';
+      return;
+    }
+
+    const gridWrap = document.createElement('div');
+    gridWrap.className = 'grid-wrap';
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    grid.style.gridTemplateColumns = `repeat(${gridW}, ${cellSize}px)`;
+    grid.style.gridTemplateRows = `repeat(${gridH}, ${cellSize}px)`;
+
+    for (let y = 0; y < gridH; y++) {
+      for (let x = 0; x < gridW; x++) {
+        const idx = (y * gridW + x) * 4;
+        const r = pixelData[idx];
+        const g = pixelData[idx + 1];
+        const b = pixelData[idx + 2];
+        const hex = rgbToHex(r, g, b);
+
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.style.width = cellSize + 'px';
+        cell.style.height = cellSize + 'px';
+        cell.style.background = hex;
+        cell.title = hex;
+        cell.dataset.hex = hex;
+
+        cell.addEventListener('click', () => {
+          navigator.clipboard.writeText(hex).then(() => {
+            showToast('Copied ' + hex);
+          }).catch(() => {
+            showToast('Copy failed');
+          });
+          cell.classList.toggle('used');
+        });
+
+        grid.appendChild(cell);
+      }
+    }
+
+    gridWrap.appendChild(grid);
+    gridWrap.style.border = 'none';
+    stage.innerHTML = '';
+    stage.appendChild(gridWrap);
+
+    currentGridWrap = gridWrap;
+    currentGridWrap.dataset.gridW = gridW;
+    currentGridWrap.dataset.gridH = gridH;
+    currentGridWrap.dataset.cellSize = cellSize;
+
+    pipBtn.disabled = !('documentPictureInPicture' in window);
+
+    infoText.textContent = `${gridW} × ${gridH} = ${gridW * gridH} blocks`;
+  });
+
+  pipBtn.addEventListener('click', async () => {
+    if (!currentGridWrap) return;
+    if (!('documentPictureInPicture' in window)) {
+      showToast('PiP not supported in this browser');
+      return;
+    }
+
+    const gridW = parseInt(currentGridWrap.dataset.gridW, 10);
+    const gridH = parseInt(currentGridWrap.dataset.gridH, 10);
+    const cellSize = parseInt(currentGridWrap.dataset.cellSize, 10);
+
+    pipWindow = await documentPictureInPicture.requestWindow({
+      width: gridW * cellSize,
+      height: gridH * cellSize
+    });
+
+    // copy the page's styles so cells/toast/etc render identically
+    for (const styleEl of document.querySelectorAll('style')) {
+      pipWindow.document.head.appendChild(styleEl.cloneNode(true));
+    }
+
+    pipWindow.document.body.style.margin = '0';
+    pipWindow.document.body.style.background = '#ffffff';
+    pipWindow.document.body.style.overflow = 'hidden';
+
+    // move the live node (not a clone) so click handlers keep working
+    pipWindow.document.body.appendChild(currentGridWrap);
+    stage.innerHTML = '';
+
+    pipWindow.addEventListener('pagehide', () => {
+      stage.appendChild(currentGridWrap);
+      pipWindow = null;
+    }, { once: true });
+  });
+</script>
+
+</body>
+</html>
