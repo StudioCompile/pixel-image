@@ -11,6 +11,9 @@
     --paper: #ffffff;
     --accent: #b91c1c;
     --accent-dark: #7f1414;
+    --red: #dc2626;
+    --green: #16a34a;
+    --blue: #2563eb;
   }
   * { box-sizing: border-box; }
   body {
@@ -88,6 +91,7 @@
     font-weight: 600;
     cursor: pointer;
     height: fit-content;
+    white-space: nowrap;
   }
   button:hover { background: #2a2d33; }
   button:disabled { background: #d8d9db; border-color: #d8d9db; color: #fff; cursor: not-allowed; }
@@ -208,13 +212,13 @@
   .resume-dismiss { background: var(--paper); color: var(--ink); border: 1px solid #cfd1d4; }
   .resume-dismiss:hover { background: #f2f2f2; }
 
-  /* ---------------- popup idle controls (auto mode not running) ---------------- */
+  /* ---------------- popup idle controls ---------------- */
 
   .pip-idle-bar {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 10px 14px;
+    gap: 10px;
+    padding: 12px 14px;
     border-bottom: 1px solid var(--line);
     flex-shrink: 0;
     font-size: 12px;
@@ -231,10 +235,11 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 5px 9px;
+    padding: 6px 10px;
     border: 1px solid #cfd1d4;
     border-radius: 6px;
     background: #fafafa;
+    font-size: 12px;
   }
   .start-indicator.picked { border-color: var(--accent); background: #fdf1f1; }
   .start-indicator-text { color: var(--ink-soft); }
@@ -255,25 +260,47 @@
   }
   .start-clear-btn:hover { background: #e6e6e7; color: var(--ink); }
 
-  .dir-picker { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-  .dir-picker-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); margin-right: 2px; }
+  .dir-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .dir-section-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+  }
+  .dir-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
   .dir-btn {
     display: flex;
     align-items: center;
     gap: 6px;
     padding: 7px 12px;
-    background: var(--ink);
-    color: #fff;
-    border: 1px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid #cfd1d4;
     border-radius: 6px;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
   }
-  .dir-btn:hover { background: #2a2d33; }
+  .dir-btn:hover:not(:disabled) { background: #f2f2f3; border-color: var(--ink); }
   .dir-btn .glyph { font-size: 14px; }
+  
+  .auto-start-btn {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+    padding: 7px 16px;
+  }
+  .auto-start-btn:hover:not(:disabled) { background: var(--accent-dark); border-color: var(--accent-dark); }
 
-  /* ---------------- auto mode click-to-copy overlay ---------------- */
+  /* ---------------- auto mode overlay ---------------- */
 
   .auto-overlay {
     position: absolute;
@@ -297,48 +324,43 @@
     z-index: 2;
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
+    gap: 8px;
+    padding: 8px 10px;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(8px);
   }
   .auto-icon {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.85);
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.6);
     flex-shrink: 0;
-    box-shadow: 0 0 0 1px rgba(0,0,0,0.25);
   }
   .auto-header-text {
     display: flex;
     flex-direction: column;
     line-height: 1.25;
   }
-  .auto-progress-text { color: #ffffff; font-size: 12px; font-weight: 700; }
+  .auto-progress-text { color: #ffffff; font-size: 11px; font-weight: 700; }
   .auto-ago-text { color: rgba(255,255,255,0.7); font-size: 10px; }
 
   .auto-header-spacer { flex: 1; }
 
-  .auto-mini-btn {
-    width: 26px;
-    height: 26px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255,255,255,0.12);
+  .auto-control-btn {
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.15);
     color: #ffffff;
-    border: 1px solid rgba(255,255,255,0.4);
-    border-radius: 50%;
-    font-size: 12px;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
     cursor: pointer;
+    white-space: nowrap;
   }
-  .auto-mini-btn:hover { background: rgba(255,255,255,0.28); }
-  .auto-mini-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-  .auto-mini-btn.close { background: rgba(0,0,0,0.35); }
-  .auto-mini-btn.close:hover { background: var(--accent); border-color: var(--accent); }
-  .auto-mini-btn.square { border-radius: 6px; }
-  .auto-mini-btn.active { background: var(--accent); border-color: var(--accent); }
-  .auto-mini-btn.active:hover { background: var(--accent-dark); }
+  .auto-control-btn:hover { background: rgba(255,255,255,0.25); }
+  .auto-control-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .auto-control-btn.active { background: rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.5); }
+  .auto-control-btn.close:hover { background: var(--accent); border-color: var(--accent); }
 
   .auto-click-area {
     flex: 1;
@@ -352,15 +374,15 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 150px;
-    height: 96px;
+    width: 140px;
+    height: 80px;
     display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 4px;
     border: 2px dashed rgba(255,255,255,0.85);
-    border-radius: 10px;
+    border-radius: 8px;
     background: rgba(255,255,255,0.08);
     color: #fff;
     font-size: 10px;
@@ -371,14 +393,14 @@
     z-index: 4;
   }
   .hover-zone.active { display: flex; }
-  .hover-zone .hz-icon { font-size: 20px; font-weight: 400; }
+  .hover-zone .hz-icon { font-size: 16px; font-weight: 400; }
 
   .auto-flash {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) scale(0.9);
-    font-size: 34px;
+    font-size: 28px;
     font-weight: 800;
     letter-spacing: 0.06em;
     color: #fff;
@@ -392,24 +414,13 @@
 
   .auto-footer {
     position: absolute;
-    bottom: 10px;
-    right: 10px;
+    bottom: 8px;
+    right: 8px;
     z-index: 2;
     display: flex;
     align-items: center;
     gap: 6px;
   }
-  .auto-footer button {
-    background: rgba(20,20,22,0.55);
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.4);
-    border-radius: 6px;
-    padding: 6px 10px;
-    font-size: 11px;
-    font-weight: 600;
-  }
-  .auto-footer button:hover { background: rgba(20,20,22,0.8); }
-  .auto-footer button:disabled { opacity: 0.3; cursor: not-allowed; }
 
   .pip-click-area {
     flex: 1;
@@ -480,6 +491,7 @@
   const PIP_DEFAULT_W = 560;
   const PIP_DEFAULT_H = 480;
   const RGB_COLORS = ['#ff0000', '#00ff00', '#0000ff'];
+  const RGB_COLOR_HEX = ['#dc2626', '#16a34a', '#2563eb']; // Red, Green, Blue for checkmarks
   const RGB_NAMES = ['RED', 'GREEN', 'BLUE'];
 
   let loadedImage = null;
@@ -489,13 +501,12 @@
   let pipIdleBarEl = null;
   let gridDims = { w: 0, h: 0 };
 
-  // every cell in raster (row-major) order — used for building the grid and pixel lookup
   let allCells = [];
-  // the order auto mode steps through, derived from allCells + the chosen start direction
   let autoSequence = [];
 
   let direction = 'down'; // 'down' | 'up' | 'right' | 'left'
-  let startCell = null; // a cell from allCells, or null for the default edge
+  let nextRowDirection = 'down'; // For horizontal directions: which way to go to next column
+  let startCell = null;
   let autoModeEnabled = false;
   let autoPointer = -1;
   let currentHex = null;
@@ -503,12 +514,12 @@
   let lastLineKey = null;
   let lastCopiedAt = null;
   let soundEnabled = true;
-  let hoverModeEnabled = false; // advance by hovering the small box, no click/focus needed
+  let hoverModeEnabled = false;
   let awaitingReturn = false;
   let watchedWindow = null;
   let liveTimerId = null;
 
-  let overlayEls = null; // refs to the live auto-overlay DOM, when auto mode is running
+  let overlayEls = null;
 
   if (!('documentPictureInPicture' in window)) {
     pipBtn.title = 'Picture-in-picture is not supported in this browser (try Chrome or Edge).';
@@ -518,12 +529,11 @@
     return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
   }
 
-  // red starts at the rightmost column, then green, then blue, repeating leftward.
-  // this is purely a visual alignment reference — it is never copied to the clipboard.
   function bandIndexFor(x, gridW) {
     return (gridW - 1 - x) % 3;
   }
   function bandColorFor(x, gridW) { return RGB_COLORS[bandIndexFor(x, gridW)]; }
+  function bandColorHexFor(x, gridW) { return RGB_COLOR_HEX[bandIndexFor(x, gridW)]; }
   function bandNameFor(x, gridW) { return RGB_NAMES[bandIndexFor(x, gridW)]; }
 
   // ---------- clipboard ----------
@@ -572,7 +582,6 @@
     t._timer = setTimeout(() => t.classList.remove('show'), 1200);
   }
 
-  // quick, short utterances so auto mode doesn't fall behind clicking
   function speak(text) {
     if (!soundEnabled) return;
     try {
@@ -599,15 +608,20 @@
 
   function isRowDirection() { return direction === 'down' || direction === 'up'; }
 
-  // FIXED: Direction logic - left should make blocks go left (decreasing x), right should make them go right (increasing x)
+  // FIXED: Proper direction handling - left goes left (decreasing x), right goes right (increasing x)
   function computeAutoSequence() {
     const gridW = gridDims.w, gridH = gridDims.h;
     const seq = [];
+    
     if (isRowDirection()) {
+      // Vertical direction (down/up) - iterate through rows
       const startRow = startCell ? +startCell.dataset.gy : (direction === 'down' ? 0 : gridH - 1);
       const rows = [];
-      if (direction === 'down') { for (let y = startRow; y < gridH; y++) rows.push(y); }
-      else { for (let y = startRow; y >= 0; y--) rows.push(y); }
+      if (direction === 'down') {
+        for (let y = startRow; y < gridH; y++) rows.push(y);
+      } else {
+        for (let y = startRow; y >= 0; y--) rows.push(y);
+      }
       const byRow = new Map();
       allCells.forEach(c => {
         const y = +c.dataset.gy;
@@ -619,11 +633,16 @@
         seq.push(...rowCells);
       });
     } else {
-      // FIXED: Right direction starts from left side (col 0), left direction starts from right side (last col)
+      // Horizontal direction (left/right) - iterate through columns
       const startCol = startCell ? +startCell.dataset.gx : (direction === 'right' ? 0 : gridW - 1);
       const cols = [];
-      if (direction === 'right') { for (let x = startCol; x < gridW; x++) cols.push(x); }
-      else { for (let x = startCol; x >= 0; x--) cols.push(x); }
+      if (direction === 'right') {
+        // Going right: start from left, go to right
+        for (let x = startCol; x < gridW; x++) cols.push(x);
+      } else {
+        // Going left: start from right, go to left
+        for (let x = startCol; x >= 0; x--) cols.push(x);
+      }
       const byCol = new Map();
       allCells.forEach(c => {
         const x = +c.dataset.gx;
@@ -631,7 +650,13 @@
         byCol.get(x).push(c);
       });
       cols.forEach(x => {
-        const colCells = (byCol.get(x) || []).slice().sort((a, b) => +a.dataset.gy - +b.dataset.gy);
+        let colCells = (byCol.get(x) || []).slice();
+        // Sort by row based on nextRowDirection
+        if (nextRowDirection === 'down') {
+          colCells.sort((a, b) => +a.dataset.gy - +b.dataset.gy);
+        } else {
+          colCells.sort((a, b) => +b.dataset.gy - +a.dataset.gy);
+        }
         seq.push(...colCells);
       });
     }
@@ -694,12 +719,6 @@
     activateCell(autoSequence[autoPointer]);
   }
 
-  // FIXED: Non-auto mode - after clicking start block, prompt for direction before starting
-  function startAutoWithDirection(dir) {
-    direction = dir;
-    startAuto();
-  }
-
   function startAuto() {
     if (allCells.length === 0 || !pipWindow) return;
     removePipIdleBar();
@@ -718,8 +737,6 @@
     startLiveTimer();
   }
 
-  // clears progress for the current run only (the cells in autoSequence) and
-  // jumps back to its first cell — the start block and direction stay the same
   function restartAuto() {
     if (!autoModeEnabled) return;
     autoSequence.forEach(c => c.classList.remove('used', 'current', 'next-preview'));
@@ -730,8 +747,6 @@
     activateCell(autoSequence[0]);
   }
 
-  // stops auto mode and returns the popup to its idle state (grid + start controls).
-  // does not close the popup.
   function stopAuto() {
     autoModeEnabled = false;
     autoPointer = -1;
@@ -775,12 +790,11 @@
     if (liveTimerId) { clearInterval(liveTimerId); liveTimerId = null; }
   }
 
-  // ---------- focus-return + keyboard shortcuts (popup only) ----------
+  // ---------- focus-return + keyboard shortcuts ----------
 
-  // FIXED: Double-click bug - properly handle focus/click interaction to prevent double advancement
   let pendingFocusAdvance = null;
-  let clickHandled = false; // Track if click was already handled
-  
+  let clickHandled = false;
+
   function cancelPendingFocusAdvance() {
     if (pendingFocusAdvance) { clearTimeout(pendingFocusAdvance); pendingFocusAdvance = null; }
   }
@@ -790,7 +804,6 @@
     if (autoModeEnabled && awaitingReturn) {
       awaitingReturn = false;
       cancelPendingFocusAdvance();
-      // Only advance if no click happened within the threshold
       if (!clickHandled) {
         pendingFocusAdvance = setTimeout(() => { 
           pendingFocusAdvance = null; 
@@ -799,33 +812,27 @@
       }
     }
   }
-  
-  // Reset click handled flag periodically
-  function resetClickHandled() {
-    clickHandled = false;
-  }
-  
+
   function onKeyHandler(e) {
     if (!autoModeEnabled) return;
     if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goNext(); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); goBack(); }
     else if (e.key === 'Escape') { e.preventDefault(); stopAuto(); }
   }
-  
+
   function attachWatcher(win) {
     detachWatcher(watchedWindow);
     watchedWindow = win;
     win.addEventListener('blur', onBlurHandler);
     win.addEventListener('focus', onFocusHandler);
     win.addEventListener('keydown', onKeyHandler);
-    // Track clicks to prevent double advancement
     win.addEventListener('click', (e) => {
       cancelPendingFocusAdvance();
       clickHandled = true;
-      setTimeout(resetClickHandled, 100); // Reset after a short delay
+      setTimeout(() => clickHandled = false, 100);
     }, true);
   }
-  
+
   function detachWatcher(win) {
     if (!win) return;
     win.removeEventListener('blur', onBlurHandler);
@@ -835,7 +842,7 @@
     cancelPendingFocusAdvance();
   }
 
-  // ---------- auto mode overlay (transparent, click-anywhere, in the popup) ----------
+  // ---------- auto mode overlay ----------
 
   function buildAutoOverlay() {
     if (!pipWindow) return;
@@ -869,31 +876,31 @@
     spacer.className = 'auto-header-spacer';
 
     const soundBtn = doc.createElement('button');
-    soundBtn.className = 'auto-mini-btn';
+    soundBtn.className = 'auto-control-btn';
     soundBtn.type = 'button';
 
     const hoverBtn = doc.createElement('button');
-    hoverBtn.className = 'auto-mini-btn square';
+    hoverBtn.className = 'auto-control-btn';
     hoverBtn.type = 'button';
-    hoverBtn.textContent = '▢';
-    hoverBtn.title = 'Hover mode — advance by hovering the box below, no click or window focus needed';
+    hoverBtn.textContent = 'Hover';
+    hoverBtn.title = 'Toggle hover mode — advance by hovering the box below';
 
     const backBtn = doc.createElement('button');
-    backBtn.className = 'auto-mini-btn';
+    backBtn.className = 'auto-control-btn';
     backBtn.type = 'button';
-    backBtn.textContent = '↩';
-    backBtn.title = 'Undo';
+    backBtn.textContent = '↩ Undo';
+    backBtn.title = 'Go back one step';
 
     const restartBtn = doc.createElement('button');
-    restartBtn.className = 'auto-mini-btn';
+    restartBtn.className = 'auto-control-btn';
     restartBtn.type = 'button';
-    restartBtn.textContent = '⟲';
-    restartBtn.title = 'Restart this run from the beginning';
+    restartBtn.textContent = '↺ Restart';
+    restartBtn.title = 'Restart from beginning';
 
     const closeBtn = doc.createElement('button');
-    closeBtn.className = 'auto-mini-btn close';
+    closeBtn.className = 'auto-control-btn close';
     closeBtn.type = 'button';
-    closeBtn.textContent = '✕';
+    closeBtn.textContent = '✕ Exit';
     closeBtn.title = 'Exit auto mode';
 
     header.appendChild(icon);
@@ -915,7 +922,7 @@
     hoverZone.className = 'hover-zone';
     const hzIcon = doc.createElement('div');
     hzIcon.className = 'hz-icon';
-    hzIcon.textContent = '▢';
+    hzIcon.textContent = '□';
     const hzLabel = doc.createElement('div');
     hzLabel.textContent = 'Hover to advance';
     hoverZone.appendChild(hzIcon);
@@ -927,6 +934,7 @@
     const footer = doc.createElement('div');
     footer.className = 'auto-footer';
     const saveBtn = doc.createElement('button');
+    saveBtn.className = 'auto-control-btn';
     saveBtn.type = 'button';
     saveBtn.textContent = 'Save & exit';
     footer.appendChild(saveBtn);
@@ -937,75 +945,58 @@
     overlay.appendChild(footer);
     area.appendChild(overlay);
 
-    // FIXED: Button clicks should not trigger auto mode advancement
+    // Prevent button clicks from advancing
     [header, footer].forEach(el => {
-      el.addEventListener('click', e => {
-        e.stopPropagation();
-        e.preventDefault();
-      });
+      el.addEventListener('click', e => e.stopPropagation());
     });
-    
-    // Only the click area advances, not the buttons
+
     clickArea.addEventListener('click', (e) => {
-      // Don't advance if clicking on hover zone (handled separately)
       if (e.target === hoverZone || hoverZone.contains(e.target)) return;
       goNext();
     });
-    
-    // FIXED: Hover zone functionality
-    hoverZone.addEventListener('click', e => {
-      e.stopPropagation();
-      e.preventDefault();
-    });
-    
+
+    hoverZone.addEventListener('click', e => e.stopPropagation());
     hoverZone.addEventListener('mouseenter', () => {
       if (hoverModeEnabled) {
         cancelPendingFocusAdvance();
         goNext();
       }
     });
-    
-    // FIXED: Button event handlers - prevent propagation to avoid triggering auto mode
+
     soundBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      e.preventDefault();
       soundEnabled = !soundEnabled;
       updateOverlay();
     });
-    
+
     hoverBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      e.preventDefault();
       hoverModeEnabled = !hoverModeEnabled;
       updateOverlay();
     });
-    
+
     backBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      e.preventDefault();
       goBack();
     });
-    
+
     restartBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      e.preventDefault();
       restartAuto();
     });
-    
+
     closeBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      e.preventDefault();
       stopAuto();
     });
-    
+
     saveBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      e.preventDefault();
       saveSession();
       stopAuto();
     });
 
-    overlayEls = { overlay, icon, progressEl, agoEl, soundBtn, hoverBtn, hoverZone, backBtn, flash };
+    overlayEls = { overlay, icon, progressEl, agoEl, soundBtn, hoverBtn, hoverZone, backBtn, restartBtn, flash };
     updateOverlay();
   }
 
@@ -1019,10 +1010,9 @@
     overlayEls.progressEl.textContent = autoSequence.length ? `${autoPointer + 1} / ${autoSequence.length}` : '';
     overlayEls.agoEl.textContent = lastCopiedAt ? formatAgo(Date.now() - lastCopiedAt) : '';
     overlayEls.icon.style.background = currentHex || '#888888';
-    overlayEls.soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
+    overlayEls.soundBtn.textContent = soundEnabled ? '🔊 Sound' : '🔇 Muted';
     overlayEls.backBtn.disabled = autoPointer <= 0;
     
-    // FIXED: Show/hide hover zone based on hover mode
     if (overlayEls.hoverZone) {
       if (hoverModeEnabled) {
         overlayEls.hoverZone.classList.add('active');
@@ -1031,7 +1021,11 @@
       }
     }
     if (overlayEls.hoverBtn) {
-      overlayEls.hoverBtn.classList.toggle('active', hoverModeEnabled);
+      if (hoverModeEnabled) {
+        overlayEls.hoverBtn.classList.add('active');
+      } else {
+        overlayEls.hoverBtn.classList.remove('active');
+      }
     }
   }
 
@@ -1041,16 +1035,14 @@
     el.textContent = name;
     el.style.color = color;
     el.classList.remove('show');
-    // force reflow so the animation restarts on repeated same-color flashes
     void el.offsetWidth;
     el.classList.add('show');
     clearTimeout(el._timer);
     el._timer = setTimeout(() => el.classList.remove('show'), 450);
   }
 
-  // ---------- popup idle controls (grid visible, auto mode not running) ----------
+  // ---------- popup idle controls ----------
 
-  // FIXED: Two-step flow - click block to set start, then choose direction
   function ensurePipIdleBar() {
     if (!pipWindow) return;
     removePipIdleBar();
@@ -1058,27 +1050,28 @@
     const bar = doc.createElement('div');
     bar.className = 'pip-idle-bar';
 
+    // Info row
     const topRow = doc.createElement('div');
     topRow.className = 'pip-idle-row';
 
     const info = doc.createElement('span');
     info.className = 'pip-idle-info';
-    info.textContent = `${gridDims.w} × ${gridDims.h} — ${allCells.length} squares`;
+    info.textContent = `${gridDims.w} × ${gridDims.h} — ${allCells.length} squares — Click squares to copy colors individually`;
 
     const startIndicator = doc.createElement('div');
     startIndicator.className = 'start-indicator' + (startCell ? ' picked' : '');
     const startText = doc.createElement('span');
     startText.className = 'start-indicator-text';
     startText.textContent = startCell
-      ? `Start block: col ${+startCell.dataset.gx + 1}, row ${+startCell.dataset.gy + 1}`
-      : 'Click a block to set the start point (optional)';
+      ? `Start: col ${+startCell.dataset.gx + 1}, row ${+startCell.dataset.gy + 1}`
+      : 'Click a square to set start point';
     startIndicator.appendChild(startText);
     if (startCell) {
       const clearBtn = doc.createElement('button');
       clearBtn.className = 'start-clear-btn';
       clearBtn.type = 'button';
       clearBtn.textContent = '✕';
-      clearBtn.title = 'Clear start block';
+      clearBtn.title = 'Clear start point';
       clearBtn.addEventListener('click', () => {
         startCell.classList.remove('start-marker');
         startCell = null;
@@ -1090,47 +1083,104 @@
     topRow.appendChild(info);
     topRow.appendChild(startIndicator);
 
-    const dirRow = doc.createElement('div');
-    dirRow.className = 'pip-idle-row';
+    // Direction section
+    const dirSection = doc.createElement('div');
+    dirSection.className = 'dir-section';
+    
+    const dirLabel = doc.createElement('div');
+    dirLabel.className = 'dir-section-label';
+    dirLabel.textContent = 'Direction';
+    dirSection.appendChild(dirLabel);
 
-    const dirPicker = doc.createElement('div');
-    dirPicker.className = 'dir-picker';
-    const dirLabel = doc.createElement('span');
-    dirLabel.className = 'dir-picker-label';
-    dirLabel.textContent = 'Then choose a direction';
-    dirPicker.appendChild(dirLabel);
+    const dirButtons = doc.createElement('div');
+    dirButtons.className = 'dir-buttons';
 
-    // FIXED: Direction buttons with correct arrow meanings
     const dirs = [
       { key: 'down', glyph: '↓', label: 'Down' },
       { key: 'up', glyph: '↑', label: 'Up' },
       { key: 'right', glyph: '→', label: 'Right' },
       { key: 'left', glyph: '←', label: 'Left' }
     ];
+    
     dirs.forEach(d => {
       const b = doc.createElement('button');
       b.type = 'button';
       b.className = 'dir-btn';
+      if (direction === d.key) b.style.background = '#f2f2f3';
       const glyph = doc.createElement('span');
       glyph.className = 'glyph';
       glyph.textContent = d.glyph;
       b.appendChild(glyph);
       b.appendChild(doc.createTextNode(d.label));
       b.addEventListener('click', () => {
-        startAutoWithDirection(d.key);
+        direction = d.key;
+        if (!isRowDirection() && !nextRowDirection) {
+          nextRowDirection = 'down'; // Default for horizontal
+        }
+        ensurePipIdleBar();
       });
-      dirPicker.appendChild(b);
+      dirButtons.appendChild(b);
     });
 
-    dirRow.appendChild(dirPicker);
+    dirSection.appendChild(dirButtons);
+
+    // Next row direction (only for horizontal directions)
+    if (!isRowDirection()) {
+      const nextRowSection = doc.createElement('div');
+      nextRowSection.className = 'dir-section';
+      
+      const nextRowLabel = doc.createElement('div');
+      nextRowLabel.className = 'dir-section-label';
+      nextRowLabel.textContent = 'Next column direction';
+      nextRowSection.appendChild(nextRowLabel);
+
+      const nextRowButtons = doc.createElement('div');
+      nextRowButtons.className = 'dir-buttons';
+
+      const rowDirs = [
+        { key: 'down', glyph: '↓', label: 'Down' },
+        { key: 'up', glyph: '↑', label: 'Up' }
+      ];
+      
+      rowDirs.forEach(d => {
+        const b = doc.createElement('button');
+        b.type = 'button';
+        b.className = 'dir-btn';
+        if (nextRowDirection === d.key) b.style.background = '#f2f2f3';
+        const glyph = doc.createElement('span');
+        glyph.className = 'glyph';
+        glyph.textContent = d.glyph;
+        b.appendChild(glyph);
+        b.appendChild(doc.createTextNode(d.label));
+        b.addEventListener('click', () => {
+          nextRowDirection = d.key;
+          ensurePipIdleBar();
+        });
+        nextRowButtons.appendChild(b);
+      });
+
+      nextRowSection.appendChild(nextRowButtons);
+      dirSection.appendChild(nextRowSection);
+    }
+
+    // Auto start button
+    const startButtonRow = doc.createElement('div');
+    startButtonRow.className = 'pip-idle-row';
+    
+    const startAutoBtn = doc.createElement('button');
+    startAutoBtn.className = 'auto-start-btn';
+    startAutoBtn.type = 'button';
+    startAutoBtn.textContent = 'Start Auto Mode';
+    startAutoBtn.addEventListener('click', startAuto);
+    startButtonRow.appendChild(startAutoBtn);
+    dirSection.appendChild(startButtonRow);
 
     bar.appendChild(topRow);
-    bar.appendChild(dirRow);
+    bar.appendChild(dirSection);
     doc.body.insertBefore(bar, doc.body.firstChild);
     pipIdleBarEl = bar;
   }
 
-  // marks a clicked block as the start point for the next auto-mode run
   function selectStartCell(cell) {
     if (startCell) startCell.classList.remove('start-marker');
     startCell = cell;
@@ -1162,14 +1212,12 @@
     });
   }
 
-  // fits the whole grid (plus the two reference rows) inside the popup's
-  // click area with no cropping or scrolling — recalculated on every resize
   function layoutPipView() {
     if (!pipWindow || !currentGridWrap) return;
     const area = pipWindow.document.querySelector('.pip-click-area');
     if (!area) return;
     const gridW = gridDims.w, gridH = gridDims.h;
-    const totalRows = gridH + 2; // + top and bottom reference rows
+    const totalRows = gridH + 2;
 
     const availW = Math.max(20, area.clientWidth - 16);
     const availH = Math.max(20, area.clientHeight - 16);
@@ -1238,8 +1286,6 @@
 
     pipWindow.addEventListener('resize', onPipResize);
 
-    // closing the popup (by any means) always stops auto mode — auto mode
-    // only exists inside the popup, so there is nothing left to migrate.
     pipWindow.addEventListener('pagehide', () => {
       if (autoModeEnabled) stopAuto();
       pipWindow = null;
@@ -1253,7 +1299,7 @@
     return pipWindow;
   }
 
-  // ---------- manual (non-auto) cell click, only relevant on the main page ----------
+  // ---------- manual cell click ----------
 
   function handleManualCellClick(cell) {
     const hex = cell.dataset.hex;
@@ -1283,8 +1329,6 @@
       sq.style.cursor = 'default';
       sq.title = 'Alignment reference — not copyable';
       if (centerXs.includes(x)) sq.classList.add('center-mark-cell');
-      // intentionally no click handler: this row is only for checking that
-      // your build lines up, and should never be copied to the clipboard.
       row.appendChild(sq);
     }
     return row;
@@ -1302,7 +1346,7 @@
     } catch (err) { return null; }
 
     allCells = [];
-    startCell = null; // a fresh grid means any previously picked start block no longer applies
+    startCell = null;
     gridDims = { w: gridW, h: gridH };
 
     const gridWrap = document.createElement('div');
@@ -1328,13 +1372,13 @@
         cell.dataset.hex = hex;
         cell.dataset.gx = x;
         cell.dataset.gy = y;
-        // checkmark color matches the reference rows' expected color for this column
-        cell.style.setProperty('--check-color', bandColorFor(x, gridW));
+        // FIXED: Checkmark color matches the band color
+        cell.style.setProperty('--check-color', bandColorHexFor(x, gridW));
 
         cell.addEventListener('click', () => {
-          if (autoModeEnabled) return; // in auto mode, only the overlay click area advances
+          if (autoModeEnabled) return;
           if (pipWindow && cell.ownerDocument === pipWindow.document) {
-            selectStartCell(cell); // in the popup, a click before auto starts picks the start block
+            selectStartCell(cell);
           } else {
             handleManualCellClick(cell);
           }
@@ -1345,9 +1389,6 @@
       }
     }
 
-    // reference rows above AND below the grid, so you can check alignment
-    // at either end of a tall build — both use the same column coloring,
-    // which is also what the checkmarks match.
     gridWrap.appendChild(buildCalibrationRow(gridW, cellSize));
     gridWrap.appendChild(grid);
     gridWrap.appendChild(buildCalibrationRow(gridW, cellSize));
