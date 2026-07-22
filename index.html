@@ -112,6 +112,8 @@
   .grid-wrap {
     display: inline-block;
     border: 1px solid #dddddd;
+    padding: 6px;
+    background: #ffffff;
   }
 
   .grid {
@@ -277,28 +279,52 @@
     return pipWindow || window;
   }
 
-  // copies text using whichever window's document currently has the cell/focus,
-  // since a cell moved into the PiP window is owned by a different document/window
-  async function copyToClipboard(text, win) {
+  const PAD = 6;
+  const BORDER = 1;
+
+  function pipContentSize(gridW, gridH, cellSize) {
+    return {
+      w: gridW * cellSize + (PAD + BORDER) * 2,
+      h: gridH * cellSize + (PAD + BORDER) * 2
+    };
+  }
+
+  async function tryClipboardWrite(win, text) {
     try {
+      if (!win.navigator.clipboard || !win.navigator.clipboard.writeText) return false;
       await win.navigator.clipboard.writeText(text);
       return true;
     } catch (err) {
-      try {
-        const ta = win.document.createElement('textarea');
-        ta.value = text;
-        ta.style.position = 'fixed';
-        ta.style.opacity = '0';
-        win.document.body.appendChild(ta);
-        ta.focus();
-        ta.select();
-        win.document.execCommand('copy');
-        win.document.body.removeChild(ta);
-        return true;
-      } catch (err2) {
-        return false;
-      }
+      return false;
     }
+  }
+
+  function execCommandCopy(win, text) {
+    try {
+      const ta = win.document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      win.document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = win.document.execCommand('copy');
+      win.document.body.removeChild(ta);
+      return ok;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  // tries the original page window first (it usually holds clipboard permission
+  // most reliably), then the window that currently owns the cell (e.g. a PiP
+  // window), then falls back to the legacy copy command on both
+  async function copyToClipboard(text, cellWin) {
+    if (await tryClipboardWrite(window, text)) return true;
+    if (cellWin !== window && await tryClipboardWrite(cellWin, text)) return true;
+    if (execCommandCopy(window, text)) return true;
+    if (cellWin !== window && execCommandCopy(cellWin, text)) return true;
+    return false;
   }
 
   function showToastIn(win, msg) {
@@ -383,6 +409,34 @@
     autoCurrentIndex = next;
     setCurrentCell(next);
     copyCurrentAndNotify();
+  }
+
+  function resizePipTo(gridW, gridH, cellSize) {
+    if (!pipWindow) return;
+    const size = pipContentSize(gridW, gridH, cellSize);
+    try { pipWindow.resizeTo(size.w, size.h); } catch (err) { /* ignore */ }
+  }
+
+  // always mounts the grid into whichever container is actually on screen —
+  // the PiP window if it's open, otherwise the main page. This matters because
+  // regenerating while popped out must replace the PiP content, not the
+  // (invisible) main page, or clicks end up targeting the wrong cells.
+  function mountGrid(gridWrap, gridW, gridH, cellSize) {
+    currentGridWrap = gridWrap;
+    gridWrap.dataset.gridW = gridW;
+    gridWrap.dataset.gridH = gridH;
+    gridWrap.dataset.cellSize = cellSize;
+
+    if (pipWindow) {
+      pipWindow.document.body.innerHTML = '';
+      pipWindow.document.body.appendChild(gridWrap);
+      resizePipTo(gridW, gridH, cellSize);
+    } else {
+      stage.innerHTML = '';
+      stage.appendChild(gridWrap);
+    }
+
+    pipBtn.disabled = !('documentPictureInPicture' in window);
   }
 
   function handleCellClick(index) {
@@ -482,6 +536,15 @@
     const gridH = Math.max(1, Math.min(256, parseInt(heightInput.value, 10) || 32));
     const cellSize = Math.max(4, Math.min(64, parseInt(cellSizeInput.value, 10) || 22));
 
+    // reset auto mode / watchers from any previous grid
+    autoModeEnabled = false;
+    autoModeCheckbox.checked = false;
+    autoCurrentIndex = -1;
+    awaitingReturn = false;
+    detachWatcher(watchedWindow);
+    orderedCells = [];
+    gridDims = { w: gridW, h: gridH };
+
     // downsample the image to gridW x gridH so each pixel = one cell's average color
     workCanvas.width = gridW;
     workCanvas.height = gridH;
@@ -504,6 +567,9 @@
     grid.style.gridTemplateColumns = `repeat(${gridW}, ${cellSize}px)`;
     grid.style.gridTemplateRows = `repeat(${gridH}, ${cellSize}px)`;
 
+    // which column(s) mark the center — one if odd width, two ("the center two") if even
+    const centerXs = gridW % 2 === 1 ? [(gridW - 1) / 2] : [gridW / 2 - 1, gridW / 2];
+
     for (let y = 0; y < gridH; y++) {
       for (let x = 0; x < gridW; x++) {
         const idx = (y * gridW + x) * 4;
@@ -520,30 +586,22 @@
         cell.title = hex;
         cell.dataset.hex = hex;
 
-        cell.addEventListener('click', () => {
-          navigator.clipboard.writeText(hex).then(() => {
-            showToast('Copied ' + hex);
-          }).catch(() => {
-            showToast('Copy failed');
-          });
-          cell.classList.toggle('used');
-        });
+        if (y === gridH - 1 && centerXs.includes(x)) {
+          const marker = document.createElement('div');
+          marker.className = 'center-marker';
+          cell.appendChild(marker);
+        }
+
+        const cellIndex = orderedCells.length;
+        cell.addEventListener('click', () => handleCellClick(cellIndex));
+        orderedCells.push(cell);
 
         grid.appendChild(cell);
       }
     }
 
     gridWrap.appendChild(grid);
-    gridWrap.style.border = 'none';
-    stage.innerHTML = '';
-    stage.appendChild(gridWrap);
-
-    currentGridWrap = gridWrap;
-    currentGridWrap.dataset.gridW = gridW;
-    currentGridWrap.dataset.gridH = gridH;
-    currentGridWrap.dataset.cellSize = cellSize;
-
-    pipBtn.disabled = !('documentPictureInPicture' in window);
+    mountGrid(gridWrap, gridW, gridH, cellSize);
 
     infoText.textContent = `${gridW} × ${gridH} = ${gridW * gridH} blocks`;
   });
@@ -551,17 +609,18 @@
   pipBtn.addEventListener('click', async () => {
     if (!currentGridWrap) return;
     if (!('documentPictureInPicture' in window)) {
-      showToast('PiP not supported in this browser');
+      showToastIn(window, 'PiP not supported in this browser');
       return;
     }
 
     const gridW = parseInt(currentGridWrap.dataset.gridW, 10);
     const gridH = parseInt(currentGridWrap.dataset.gridH, 10);
     const cellSize = parseInt(currentGridWrap.dataset.cellSize, 10);
+    const size = pipContentSize(gridW, gridH, cellSize);
 
     pipWindow = await documentPictureInPicture.requestWindow({
-      width: gridW * cellSize,
-      height: gridH * cellSize
+      width: size.w,
+      height: size.h
     });
 
     // copy the page's styles so cells/toast/etc render identically
@@ -572,14 +631,20 @@
     pipWindow.document.body.style.margin = '0';
     pipWindow.document.body.style.background = '#ffffff';
     pipWindow.document.body.style.overflow = 'hidden';
+    pipWindow.document.body.style.display = 'flex';
+    pipWindow.document.body.style.alignItems = 'center';
+    pipWindow.document.body.style.justifyContent = 'center';
 
     // move the live node (not a clone) so click handlers keep working
-    pipWindow.document.body.appendChild(currentGridWrap);
-    stage.innerHTML = '';
+    mountGrid(currentGridWrap, gridW, gridH, cellSize);
+
+    if (autoModeEnabled) attachWatcher(pipWindow);
 
     pipWindow.addEventListener('pagehide', () => {
-      stage.appendChild(currentGridWrap);
       pipWindow = null;
+      stage.innerHTML = '';
+      stage.appendChild(currentGridWrap);
+      if (autoModeEnabled) attachWatcher(window);
     }, { once: true });
   });
 </script>
