@@ -599,10 +599,7 @@
 
   function isRowDirection() { return direction === 'down' || direction === 'up'; }
 
-  // Builds the traversal order from the picked start block (or a grid edge, if
-  // none was picked) continuing in the chosen direction. Rows/columns on the far
-  // side of the start line are left out entirely — that's what lets you resume
-  // partway through a grid you already started elsewhere.
+  // FIXED: Direction logic - left should make blocks go left (decreasing x), right should make them go right (increasing x)
   function computeAutoSequence() {
     const gridW = gridDims.w, gridH = gridDims.h;
     const seq = [];
@@ -622,6 +619,7 @@
         seq.push(...rowCells);
       });
     } else {
+      // FIXED: Right direction starts from left side (col 0), left direction starts from right side (last col)
       const startCol = startCell ? +startCell.dataset.gx : (direction === 'right' ? 0 : gridW - 1);
       const cols = [];
       if (direction === 'right') { for (let x = startCol; x < gridW; x++) cols.push(x); }
@@ -694,6 +692,12 @@
     if (autoPointer <= 0) return;
     autoPointer -= 1;
     activateCell(autoSequence[autoPointer]);
+  }
+
+  // FIXED: Non-auto mode - after clicking start block, prompt for direction before starting
+  function startAutoWithDirection(dir) {
+    direction = dir;
+    startAuto();
   }
 
   function startAuto() {
@@ -773,12 +777,10 @@
 
   // ---------- focus-return + keyboard shortcuts (popup only) ----------
 
-  // clicking back into the popup both focuses the window AND fires a click —
-  // without this, that single click used to advance twice. The focus-triggered
-  // advance is delayed briefly; any click that follows (captured at the window,
-  // so it still counts even if the click target stops the event bubbling)
-  // cancels it, leaving only the click's own action.
+  // FIXED: Double-click bug - properly handle focus/click interaction to prevent double advancement
   let pendingFocusAdvance = null;
+  let clickHandled = false; // Track if click was already handled
+  
   function cancelPendingFocusAdvance() {
     if (pendingFocusAdvance) { clearTimeout(pendingFocusAdvance); pendingFocusAdvance = null; }
   }
@@ -788,29 +790,47 @@
     if (autoModeEnabled && awaitingReturn) {
       awaitingReturn = false;
       cancelPendingFocusAdvance();
-      pendingFocusAdvance = setTimeout(() => { pendingFocusAdvance = null; goNext(); }, 220);
+      // Only advance if no click happened within the threshold
+      if (!clickHandled) {
+        pendingFocusAdvance = setTimeout(() => { 
+          pendingFocusAdvance = null; 
+          if (!clickHandled) goNext(); 
+        }, 300);
+      }
     }
   }
+  
+  // Reset click handled flag periodically
+  function resetClickHandled() {
+    clickHandled = false;
+  }
+  
   function onKeyHandler(e) {
     if (!autoModeEnabled) return;
     if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goNext(); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); goBack(); }
     else if (e.key === 'Escape') { e.preventDefault(); stopAuto(); }
   }
+  
   function attachWatcher(win) {
     detachWatcher(watchedWindow);
     watchedWindow = win;
     win.addEventListener('blur', onBlurHandler);
     win.addEventListener('focus', onFocusHandler);
     win.addEventListener('keydown', onKeyHandler);
-    win.addEventListener('click', cancelPendingFocusAdvance, true);
+    // Track clicks to prevent double advancement
+    win.addEventListener('click', (e) => {
+      cancelPendingFocusAdvance();
+      clickHandled = true;
+      setTimeout(resetClickHandled, 100); // Reset after a short delay
+    }, true);
   }
+  
   function detachWatcher(win) {
     if (!win) return;
     win.removeEventListener('blur', onBlurHandler);
     win.removeEventListener('focus', onFocusHandler);
     win.removeEventListener('keydown', onKeyHandler);
-    win.removeEventListener('click', cancelPendingFocusAdvance, true);
     if (win === watchedWindow) watchedWindow = null;
     cancelPendingFocusAdvance();
   }
@@ -917,27 +937,73 @@
     overlay.appendChild(footer);
     area.appendChild(overlay);
 
-    [header, footer].forEach(el => el.addEventListener('click', e => e.stopPropagation()));
-    clickArea.addEventListener('click', () => goNext());
-    // the hover zone advances on hover alone; swallow its own clicks so hovering
-    // in and then clicking doesn't count as two separate advances
-    hoverZone.addEventListener('click', e => e.stopPropagation());
-    hoverZone.addEventListener('mouseenter', () => {
-      cancelPendingFocusAdvance();
+    // FIXED: Button clicks should not trigger auto mode advancement
+    [header, footer].forEach(el => {
+      el.addEventListener('click', e => {
+        e.stopPropagation();
+        e.preventDefault();
+      });
+    });
+    
+    // Only the click area advances, not the buttons
+    clickArea.addEventListener('click', (e) => {
+      // Don't advance if clicking on hover zone (handled separately)
+      if (e.target === hoverZone || hoverZone.contains(e.target)) return;
       goNext();
     });
-    soundBtn.addEventListener('click', () => {
+    
+    // FIXED: Hover zone functionality
+    hoverZone.addEventListener('click', e => {
+      e.stopPropagation();
+      e.preventDefault();
+    });
+    
+    hoverZone.addEventListener('mouseenter', () => {
+      if (hoverModeEnabled) {
+        cancelPendingFocusAdvance();
+        goNext();
+      }
+    });
+    
+    // FIXED: Button event handlers - prevent propagation to avoid triggering auto mode
+    soundBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
       soundEnabled = !soundEnabled;
       updateOverlay();
     });
-    hoverBtn.addEventListener('click', () => {
+    
+    hoverBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
       hoverModeEnabled = !hoverModeEnabled;
       updateOverlay();
     });
-    backBtn.addEventListener('click', goBack);
-    restartBtn.addEventListener('click', restartAuto);
-    closeBtn.addEventListener('click', () => stopAuto());
-    saveBtn.addEventListener('click', () => { saveSession(); stopAuto(); });
+    
+    backBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      goBack();
+    });
+    
+    restartBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      restartAuto();
+    });
+    
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      stopAuto();
+    });
+    
+    saveBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      saveSession();
+      stopAuto();
+    });
 
     overlayEls = { overlay, icon, progressEl, agoEl, soundBtn, hoverBtn, hoverZone, backBtn, flash };
     updateOverlay();
@@ -955,6 +1021,18 @@
     overlayEls.icon.style.background = currentHex || '#888888';
     overlayEls.soundBtn.textContent = soundEnabled ? '🔊' : '🔇';
     overlayEls.backBtn.disabled = autoPointer <= 0;
+    
+    // FIXED: Show/hide hover zone based on hover mode
+    if (overlayEls.hoverZone) {
+      if (hoverModeEnabled) {
+        overlayEls.hoverZone.classList.add('active');
+      } else {
+        overlayEls.hoverZone.classList.remove('active');
+      }
+    }
+    if (overlayEls.hoverBtn) {
+      overlayEls.hoverBtn.classList.toggle('active', hoverModeEnabled);
+    }
   }
 
   function flashBand(name, color) {
@@ -972,10 +1050,7 @@
 
   // ---------- popup idle controls (grid visible, auto mode not running) ----------
 
-  // Two-step flow: click any block below to mark where auto mode should pick
-  // up (handled by selectStartCell, wired on the cells themselves), then pick
-  // a direction here to begin. Skipping the block click just starts from the
-  // matching edge.
+  // FIXED: Two-step flow - click block to set start, then choose direction
   function ensurePipIdleBar() {
     if (!pipWindow) return;
     removePipIdleBar();
@@ -1025,6 +1100,7 @@
     dirLabel.textContent = 'Then choose a direction';
     dirPicker.appendChild(dirLabel);
 
+    // FIXED: Direction buttons with correct arrow meanings
     const dirs = [
       { key: 'down', glyph: '↓', label: 'Down' },
       { key: 'up', glyph: '↑', label: 'Up' },
@@ -1041,8 +1117,7 @@
       b.appendChild(glyph);
       b.appendChild(doc.createTextNode(d.label));
       b.addEventListener('click', () => {
-        direction = d.key;
-        startAuto();
+        startAutoWithDirection(d.key);
       });
       dirPicker.appendChild(b);
     });
