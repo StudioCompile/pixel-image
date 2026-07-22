@@ -142,6 +142,7 @@
   .grid {
     display: grid;
     line-height: 0;
+    position: relative;
   }
 
   .cell {
@@ -170,6 +171,7 @@
     background: rgba(255, 255, 255, 0.35);
   }
 
+  /* Default checkmark uses mix-blend-mode so it stays legible on any color */
   .cell.used::after {
     content: "✓";
     position: absolute;
@@ -179,32 +181,89 @@
     justify-content: center;
     font-size: 12px;
     font-weight: bold;
-    color: #111111;
+    color: #ffffff;
+    mix-blend-mode: difference;
   }
+
+  /* RGB alignment marker cells (top-right 3 squares) get a colored, non-blended check */
+  .cell.used[data-marker]::after {
+    mix-blend-mode: normal;
+    text-shadow: 0 0 2px rgba(255,255,255,0.95), 0 0 2px rgba(255,255,255,0.95);
+  }
+  .cell.used[data-marker="red"]::after   { color: #e11d1d; }
+  .cell.used[data-marker="green"]::after { color: #16a34a; }
+  .cell.used[data-marker="blue"]::after  { color: #2563eb; }
 
   .cell.current {
     outline: 3px solid #111111;
     outline-offset: -3px;
-    z-index: 2;
+    z-index: 3;
   }
 
-  .center-guide {
+  /* The square that will be copied next */
+  .cell.next {
+    outline: 3px solid #ffffff;
+    outline-offset: -3px;
+    box-shadow: 0 0 0 1px #111111 inset;
+    z-index: 4;
+  }
+
+  /* Center alignment ticks, drawn as thin lines across the cell */
+  .center-tick {
     position: absolute;
-    background: #d32020;
     pointer-events: none;
-    z-index: 6;
+    z-index: 2;
+    background: rgba(211, 32, 32, 0.6);
   }
-
-  .center-guide.vertical {
+  .center-tick-v {
+    left: 50%;
+    top: 0;
     width: 2px;
-    height: 7px;
+    height: 100%;
     margin-left: -1px;
   }
-
-  .center-guide.horizontal {
+  .center-tick-h {
+    top: 50%;
+    left: 0;
     height: 2px;
-    width: 7px;
+    width: 100%;
     margin-top: -1px;
+  }
+
+  /* RGB alignment reference squares, sit above the grid, right-aligned */
+  .marker-strip {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0;
+    margin-bottom: 4px;
+  }
+  .marker-square {
+    position: relative;
+    border: 1px solid rgba(0,0,0,0.45);
+    cursor: pointer;
+  }
+  .marker-square.marker-red   { background: #e11d1d; }
+  .marker-square.marker-green { background: #16a34a; }
+  .marker-square.marker-blue  { background: #2563eb; }
+  .marker-square.checked::after {
+    content: "✓";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-weight: bold;
+    text-shadow: 0 0 2px rgba(0,0,0,0.85);
+  }
+
+  /* Darkening overlays used to dim the rows/columns adjacent to the active one */
+  .row-dim {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.62);
+    pointer-events: none;
+    z-index: 5;
+    display: none;
   }
 
   .placeholder {
@@ -260,12 +319,12 @@
     background: #f2f2f2;
   }
 
-  /* --- Auto mode panel --- */
+  /* --- Auto mode banner (compact) --- */
 
   .auto-panel {
     background: #ffffff;
     border: 2px solid #111111;
-    font-size: 13px;
+    font-size: 12px;
     color: #111111;
   }
 
@@ -273,15 +332,15 @@
     position: fixed;
     top: 16px;
     right: 16px;
-    width: 300px;
+    width: 240px;
     z-index: 1000;
-    padding: 14px;
+    padding: 8px 10px;
   }
 
   .auto-panel.pip {
     width: 100%;
     box-sizing: border-box;
-    padding: 10px 14px;
+    padding: 6px 10px;
     border: none;
     border-bottom: 2px solid #111111;
     flex-shrink: 0;
@@ -291,23 +350,24 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 6px;
+    margin-bottom: 2px;
   }
 
   .auto-panel-header strong {
-    font-size: 12px;
+    font-size: 10px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+    color: #666666;
   }
 
   .auto-exit-btn {
     border: 1px solid #111111;
     background: #ffffff;
     color: #111111;
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
     padding: 0;
-    font-size: 12px;
+    font-size: 11px;
     line-height: 1;
     cursor: pointer;
   }
@@ -318,63 +378,72 @@
   }
 
   .auto-panel-sub {
-    font-size: 12px;
+    font-size: 11px;
     color: #666666;
-    margin-bottom: 4px;
   }
 
-  .auto-swatch-row {
+  .auto-panel-body {
     display: flex;
-    gap: 12px;
-    margin: 10px 0;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
   }
 
   .auto-swatch-col {
-    flex: 1;
     text-align: center;
+    width: 46px;
+    flex-shrink: 0;
   }
 
   .auto-swatch-label {
-    font-size: 10px;
+    font-size: 9px;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
     color: #999999;
-    margin-bottom: 4px;
   }
 
   .auto-swatch {
     width: 100%;
-    height: 44px;
+    height: 28px;
     border: 1px solid #cccccc;
   }
 
   .auto-swatch-current {
-    height: 56px;
     border: 2px solid #111111;
   }
 
+  .auto-swatch-next {
+    border: 2px dashed #999999;
+  }
+
   .auto-swatch-hex {
-    font-size: 11px;
-    margin-top: 4px;
+    font-size: 9px;
     font-family: monospace;
+  }
+
+  .auto-controls {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
 
   .auto-order-row {
     display: flex;
-    gap: 6px;
-    margin-bottom: 8px;
+    gap: 4px;
   }
 
   .auto-order-row select {
     flex: 1;
-    padding: 5px 6px;
-    font-size: 12px;
+    min-width: 0;
+    padding: 3px 4px;
+    font-size: 11px;
   }
 
   .auto-btn-row {
     display: flex;
-    gap: 6px;
-    margin-bottom: 8px;
+    gap: 4px;
   }
 
   .auto-nav-btn {
@@ -382,8 +451,8 @@
     border: 1px solid #111111;
     background: #ffffff;
     color: #111111;
-    padding: 8px;
-    font-size: 12px;
+    padding: 5px;
+    font-size: 11px;
     cursor: pointer;
   }
 
@@ -405,10 +474,10 @@
   }
 
   .auto-sound-toggle {
-    font-size: 12px;
+    font-size: 11px;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
     cursor: pointer;
   }
 
@@ -416,8 +485,8 @@
     border: 1px solid #111111;
     background: #111111;
     color: #ffffff;
-    padding: 7px 12px;
-    font-size: 12px;
+    padding: 4px 8px;
+    font-size: 11px;
     cursor: pointer;
   }
 
@@ -517,6 +586,8 @@
   const PAD = 6;
   const BORDER = 1;
   const SESSION_KEY = 'pixelGridSession';
+  const AUTO_BANNER_H = 96;      // approx height of the compact auto-mode banner
+  const BAND_ROWS = 3;           // current row/col + 1 on each side, rest is cropped
 
   let loadedImage = null;
   let loadedImageDataURL = null;
@@ -534,7 +605,7 @@
   let sweepDirection = 'horizontal';
   let autoPointer = -1;
   let currentHex = null;
-  let previousHex = null;
+  let lastLineIndex = null;
   let soundEnabled = true;
   let awaitingReturn = false;
   let watchedWindow = null;
@@ -548,12 +619,19 @@
     return pipWindow || window;
   }
 
+  function stripHeightEstimate(cellSize) {
+    return gridDims.w > 0 ? cellSize + 4 : 0;
+  }
+
   function pipContentSize(gridW, gridH, cellSize) {
     const gridPixelW = gridW * cellSize + (PAD + BORDER) * 2;
-    const gridPixelH = gridH * cellSize + (PAD + BORDER) * 2;
-    const barH = autoModeEnabled ? 340 : 0;
+    const stripH = stripHeightEstimate(cellSize);
+    const fullGridPixelH = gridH * cellSize + (PAD + BORDER) * 2 + stripH;
+    const croppedGridPixelH = Math.min(fullGridPixelH, BAND_ROWS * cellSize + (PAD + BORDER) * 2 + stripH);
+    const barH = autoModeEnabled ? AUTO_BANNER_H : 0;
+    const gridH_used = autoModeEnabled && sweepDirection === 'horizontal' ? croppedGridPixelH : fullGridPixelH;
     const w = autoModeEnabled ? Math.max(gridPixelW, 280) : gridPixelW;
-    return { w, h: gridPixelH + barH };
+    return { w, h: gridH_used + barH };
   }
 
   function rgbToHex(r, g, b) {
@@ -610,12 +688,12 @@
     t._timer = setTimeout(() => t.classList.remove('show'), 1200);
   }
 
-  function announceCopy() {
+  function speak(text) {
     if (!soundEnabled) return;
     try {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance('Copied');
+        const u = new SpeechSynthesisUtterance(text);
         u.rate = 1.4;
         u.volume = 0.6;
         window.speechSynthesis.speak(u);
@@ -649,6 +727,7 @@
     startCorner = corner;
     sweepDirection = direction;
     sequence = buildSequenceFromOrder(corner, direction);
+    lastLineIndex = null;
     if (keepProgress) {
       const idx = sequence.findIndex(c => !c.classList.contains('used'));
       autoPointer = idx === -1 ? sequence.length - 1 : idx;
@@ -657,19 +736,53 @@
     }
   }
 
+  function getLineIndex(cell) {
+    if (!cell) return null;
+    return sweepDirection === 'horizontal'
+      ? parseInt(cell.dataset.row, 10)
+      : parseInt(cell.dataset.col, 10);
+  }
+
+  function remainingInLine(pointerIdx) {
+    const li = getLineIndex(sequence[pointerIdx]);
+    let count = 0;
+    for (let i = pointerIdx + 1; i < sequence.length; i++) {
+      if (getLineIndex(sequence[i]) === li) count++;
+      else break;
+    }
+    return count;
+  }
+
+  function updateNextHighlight() {
+    orderedCells.forEach(c => c.classList.remove('next'));
+    const nextCell = sequence[autoPointer + 1];
+    if (nextCell) nextCell.classList.add('next');
+  }
+
   function activateCell(cell) {
     orderedCells.forEach(c => c.classList.remove('current'));
-    if (currentHex !== null) previousHex = currentHex;
     cell.classList.add('used');
     cell.classList.add('current');
     currentHex = cell.dataset.hex;
+
+    const li = getLineIndex(cell);
+    const isNewLine = lastLineIndex === null || li !== lastLineIndex;
+    lastLineIndex = li;
+
+    const remaining = remainingInLine(autoPointer);
+    const lineWord = sweepDirection === 'horizontal' ? 'row' : 'column';
+    let phrase = isNewLine ? `New ${lineWord}. Copied` : 'Copied';
+    if (remaining > 0 && remaining <= 3) phrase += `. ${remaining} left in ${lineWord}`;
+    else if (remaining === 0) phrase += `. Last in ${lineWord}`;
 
     const win = cell.ownerDocument.defaultView;
     copyToClipboard(currentHex, win).then(ok => {
       showToastIn(win, ok ? ('Copied ' + currentHex) : 'Copy failed');
     });
-    announceCopy();
+    speak(phrase);
+    updateNextHighlight();
     updateAutoPanels();
+    updateAutoViewport();
   }
 
   function goNext() {
@@ -695,7 +808,6 @@
     applyOrder(corner, direction, keepProgress);
     autoModeEnabled = true;
     currentHex = null;
-    previousHex = null;
     activateCell(sequence[autoPointer]);
     ensureAutoPanel();
     attachWatcher(getActiveWindow());
@@ -709,11 +821,12 @@
     autoModeEnabled = false;
     autoPointer = -1;
     currentHex = null;
-    previousHex = null;
+    lastLineIndex = null;
     awaitingReturn = false;
-    orderedCells.forEach(c => c.classList.remove('current'));
+    orderedCells.forEach(c => { c.classList.remove('current'); c.classList.remove('next'); });
     detachWatcher(watchedWindow);
     removeAutoPanels();
+    updateAutoViewport();
     if (wasEnabled && pipWindow && currentGridWrap) {
       resizePipTo(gridDims.w, gridDims.h, parseInt(currentGridWrap.dataset.cellSize, 10));
     }
@@ -809,14 +922,14 @@
     const progressEl = doc.createElement('div');
     progressEl.className = 'auto-panel-sub';
 
-    const swatchRow = doc.createElement('div');
-    swatchRow.className = 'auto-swatch-row';
+    const body = doc.createElement('div');
+    body.className = 'auto-panel-body';
 
     const curCol = doc.createElement('div');
     curCol.className = 'auto-swatch-col';
     const curLabel = doc.createElement('div');
     curLabel.className = 'auto-swatch-label';
-    curLabel.textContent = 'Copy this now';
+    curLabel.textContent = 'Just copied';
     const currentSwatch = doc.createElement('div');
     currentSwatch.className = 'auto-swatch auto-swatch-current';
     const currentHexEl = doc.createElement('div');
@@ -825,21 +938,21 @@
     curCol.appendChild(currentSwatch);
     curCol.appendChild(currentHexEl);
 
-    const prevCol = doc.createElement('div');
-    prevCol.className = 'auto-swatch-col';
-    const prevLabel = doc.createElement('div');
-    prevLabel.className = 'auto-swatch-label';
-    prevLabel.textContent = 'Last placed';
-    const prevSwatch = doc.createElement('div');
-    prevSwatch.className = 'auto-swatch auto-swatch-prev';
-    const prevHexEl = doc.createElement('div');
-    prevHexEl.className = 'auto-swatch-hex';
-    prevCol.appendChild(prevLabel);
-    prevCol.appendChild(prevSwatch);
-    prevCol.appendChild(prevHexEl);
+    const nextCol = doc.createElement('div');
+    nextCol.className = 'auto-swatch-col';
+    const nextLabel = doc.createElement('div');
+    nextLabel.className = 'auto-swatch-label';
+    nextLabel.textContent = 'Up next';
+    const nextSwatch = doc.createElement('div');
+    nextSwatch.className = 'auto-swatch auto-swatch-next';
+    const nextHexEl = doc.createElement('div');
+    nextHexEl.className = 'auto-swatch-hex';
+    nextCol.appendChild(nextLabel);
+    nextCol.appendChild(nextSwatch);
+    nextCol.appendChild(nextHexEl);
 
-    swatchRow.appendChild(curCol);
-    swatchRow.appendChild(prevCol);
+    const controls = doc.createElement('div');
+    controls.className = 'auto-controls';
 
     const orderRow = doc.createElement('div');
     orderRow.className = 'auto-order-row';
@@ -879,13 +992,18 @@
     bottomRow.appendChild(soundLabel);
     bottomRow.appendChild(saveBtn);
 
+    controls.appendChild(orderRow);
+    controls.appendChild(btnRow);
+    controls.appendChild(bottomRow);
+
+    body.appendChild(curCol);
+    body.appendChild(nextCol);
+    body.appendChild(controls);
+
     root.appendChild(header);
     root.appendChild(gridInfoEl);
     root.appendChild(progressEl);
-    root.appendChild(swatchRow);
-    root.appendChild(orderRow);
-    root.appendChild(btnRow);
-    root.appendChild(bottomRow);
+    root.appendChild(body);
 
     exitBtn.addEventListener('click', () => {
       const wasPip = pipWindow && doc === pipWindow.document;
@@ -911,11 +1029,12 @@
     pDirection.addEventListener('change', () => {
       applyOrder(startCorner, pDirection.value, true);
       activateCell(sequence[autoPointer]);
+      if (pipWindow) resizePipTo(gridDims.w, gridDims.h, parseInt(currentGridWrap.dataset.cellSize, 10));
     });
 
     return {
       doc, root, gridInfoEl, progressEl, currentSwatch, currentHexEl,
-      prevSwatch, prevHexEl, cornerSelect: pCorner, directionSelect: pDirection,
+      nextSwatch, nextHexEl, cornerSelect: pCorner, directionSelect: pDirection,
       backBtn, nextBtn, soundToggle
     };
   }
@@ -946,13 +1065,23 @@
 
   function updateAutoPanels() {
     autoPanelInstances = autoPanelInstances.filter(p => p.root.isConnected);
+    if (!sequence.length || autoPointer < 0) return;
+    const li = getLineIndex(sequence[autoPointer]);
+    const lineWord = sweepDirection === 'horizontal' ? 'Row' : 'Col';
+    const lineTotal = sweepDirection === 'horizontal' ? gridDims.h : gridDims.w;
+    const remaining = remainingInLine(autoPointer);
+    const nextCell = sequence[autoPointer + 1];
+    const nextHex = nextCell ? nextCell.dataset.hex : null;
+
     autoPanelInstances.forEach(p => {
-      p.gridInfoEl.textContent = `${gridDims.w} × ${gridDims.h} — ${orderedCells.length} squares`;
-      p.progressEl.textContent = sequence.length ? `Square ${autoPointer + 1} of ${sequence.length}` : '';
+      p.gridInfoEl.textContent = `${lineWord} ${li + 1}/${lineTotal} • Square ${autoPointer + 1}/${sequence.length}`;
+      p.progressEl.textContent = remaining > 0
+        ? `${remaining} left in ${sweepDirection === 'horizontal' ? 'row' : 'column'}`
+        : `Last in ${sweepDirection === 'horizontal' ? 'row' : 'column'}`;
       p.currentSwatch.style.background = currentHex || '#ffffff';
       p.currentHexEl.textContent = currentHex || '—';
-      p.prevSwatch.style.background = previousHex || '#ffffff';
-      p.prevHexEl.textContent = previousHex || '—';
+      p.nextSwatch.style.background = nextHex || '#ffffff';
+      p.nextHexEl.textContent = nextHex || '—';
       p.backBtn.disabled = autoPointer <= 0;
       p.nextBtn.disabled = autoPointer >= sequence.length - 1;
       p.cornerSelect.value = startCorner;
@@ -961,12 +1090,124 @@
     });
   }
 
+  // ---------- auto-mode viewport cropping + darkening ----------
+
+  function ensureOverlayEls(gridWrap) {
+    let above = gridWrap.querySelector('.row-dim.dim-above');
+    let below = gridWrap.querySelector('.row-dim.dim-below');
+    if (!above) {
+      above = gridWrap.ownerDocument.createElement('div');
+      above.className = 'row-dim dim-above';
+      gridWrap.appendChild(above);
+    }
+    if (!below) {
+      below = gridWrap.ownerDocument.createElement('div');
+      below.className = 'row-dim dim-below';
+      gridWrap.appendChild(below);
+    }
+    return { above, below };
+  }
+
+  function updateAutoViewport() {
+    if (!currentGridWrap) return;
+    const { above, below } = ensureOverlayEls(currentGridWrap);
+    const grid = currentGridWrap.querySelector('.grid');
+    const gridTop = grid ? grid.offsetTop : 0;
+    const gridLeft = grid ? grid.offsetLeft : 0;
+
+    if (!autoModeEnabled || !sequence.length || autoPointer < 0) {
+      currentGridWrap.style.overflow = '';
+      currentGridWrap.style.height = '';
+      currentGridWrap.style.width = '';
+      currentGridWrap.scrollTop = 0;
+      currentGridWrap.scrollLeft = 0;
+      above.style.display = 'none';
+      below.style.display = 'none';
+      return;
+    }
+
+    const gw = gridDims.w, gh = gridDims.h;
+    const cellSize = parseInt(currentGridWrap.dataset.cellSize, 10);
+    const cell = sequence[autoPointer];
+
+    if (sweepDirection === 'horizontal') {
+      const row = parseInt(cell.dataset.row, 10);
+      const viewH = BAND_ROWS * cellSize + PAD * 2 + BORDER * 2;
+      currentGridWrap.style.overflowY = 'hidden';
+      currentGridWrap.style.overflowX = 'auto';
+      currentGridWrap.style.width = '';
+      currentGridWrap.style.height = Math.min(viewH, gh * cellSize + PAD * 2 + BORDER * 2) + 'px';
+      currentGridWrap.scrollTop = Math.max(0, gridTop + (row - 1) * cellSize);
+
+      if (row > 0) {
+        above.style.display = 'block';
+        above.style.left = gridLeft + 'px';
+        above.style.top = (gridTop + (row - 1) * cellSize) + 'px';
+        above.style.width = (gw * cellSize) + 'px';
+        above.style.height = cellSize + 'px';
+      } else above.style.display = 'none';
+
+      if (row < gh - 1) {
+        below.style.display = 'block';
+        below.style.left = gridLeft + 'px';
+        below.style.top = (gridTop + (row + 1) * cellSize) + 'px';
+        below.style.width = (gw * cellSize) + 'px';
+        below.style.height = cellSize + 'px';
+      } else below.style.display = 'none';
+    } else {
+      const col = parseInt(cell.dataset.col, 10);
+      const viewW = BAND_ROWS * cellSize + PAD * 2 + BORDER * 2;
+      currentGridWrap.style.overflowX = 'hidden';
+      currentGridWrap.style.overflowY = 'auto';
+      currentGridWrap.style.height = '';
+      currentGridWrap.style.width = Math.min(viewW, gw * cellSize + PAD * 2 + BORDER * 2) + 'px';
+      currentGridWrap.scrollLeft = Math.max(0, gridLeft + (col - 1) * cellSize);
+
+      if (col > 0) {
+        above.style.display = 'block';
+        above.style.top = gridTop + 'px';
+        above.style.left = (gridLeft + (col - 1) * cellSize) + 'px';
+        above.style.height = (gh * cellSize) + 'px';
+        above.style.width = cellSize + 'px';
+      } else above.style.display = 'none';
+
+      if (col < gw - 1) {
+        below.style.display = 'block';
+        below.style.top = gridTop + 'px';
+        below.style.left = (gridLeft + (col + 1) * cellSize) + 'px';
+        below.style.height = (gh * cellSize) + 'px';
+        below.style.width = cellSize + 'px';
+      } else below.style.display = 'none';
+    }
+  }
+
   // ---------- grid mounting + PiP ----------
 
   function resizePipTo(gridW, gridH, cellSize) {
     if (!pipWindow) return;
     const size = pipContentSize(gridW, gridH, cellSize);
     try { pipWindow.resizeTo(size.w, size.h); } catch (err) { /* ignore */ }
+  }
+
+  function applyCellSize(gridWrap, cellSize) {
+    const grid = gridWrap.querySelector('.grid');
+    const gw = gridDims.w, gh = gridDims.h;
+    if (grid) {
+      grid.style.gridTemplateColumns = `repeat(${gw}, ${cellSize}px)`;
+      grid.style.gridTemplateRows = `repeat(${gh}, ${cellSize}px)`;
+      grid.querySelectorAll('.cell').forEach(c => {
+        c.style.width = cellSize + 'px';
+        c.style.height = cellSize + 'px';
+      });
+    }
+    const strip = gridWrap.querySelector('.marker-strip');
+    if (strip) {
+      strip.querySelectorAll('.marker-square').forEach(s => {
+        s.style.width = cellSize + 'px';
+        s.style.height = cellSize + 'px';
+      });
+    }
+    gridWrap.dataset.cellSize = cellSize;
   }
 
   function mountGrid(gridWrap, gridW, gridH, cellSize) {
@@ -992,6 +1233,7 @@
 
     pipBtn.disabled = !('documentPictureInPicture' in window);
     startAutoBtn.disabled = false;
+    updateAutoViewport();
   }
 
   async function openPip() {
@@ -1001,7 +1243,21 @@
 
     const gridW = parseInt(currentGridWrap.dataset.gridW, 10);
     const gridH = parseInt(currentGridWrap.dataset.gridH, 10);
-    const cellSize = parseInt(currentGridWrap.dataset.cellSize, 10);
+    let cellSize = parseInt(currentGridWrap.dataset.cellSize, 10);
+
+    // Auto-fit the square size to the available screen space so the whole
+    // image is visible without scrolling, keeping the grid's aspect ratio.
+    const availW = (window.screen ? window.screen.availWidth : 1200) * 0.85;
+    const availH = (window.screen ? window.screen.availHeight : 800) * 0.8;
+    const extra = (PAD + BORDER) * 2 + stripHeightEstimate(cellSize) + (autoModeEnabled ? AUTO_BANNER_H : 0);
+    const maxCellW = Math.floor((availW - (PAD + BORDER) * 2) / gridW);
+    const maxCellH = Math.floor((availH - extra) / gridH);
+    const fitted = Math.max(4, Math.min(cellSize, maxCellW, maxCellH, 64));
+    if (fitted !== cellSize && fitted > 0) {
+      cellSize = fitted;
+      applyCellSize(currentGridWrap, cellSize);
+    }
+
     const size = pipContentSize(gridW, gridH, cellSize);
 
     pipWindow = await documentPictureInPicture.requestWindow({ width: size.w, height: size.h });
@@ -1034,6 +1290,7 @@
         attachWatcher(window);
         ensureAutoPanel();
       }
+      updateAutoViewport();
     }, { once: true });
 
     return pipWindow;
@@ -1045,11 +1302,9 @@
     const cell = orderedCells[index];
 
     if (autoModeEnabled) {
-      const idx = sequence.indexOf(cell);
-      if (idx !== -1) {
-        autoPointer = idx;
-        activateCell(cell);
-      }
+      // In auto mode, a click anywhere just advances to the next square —
+      // no need to hit the exact cell.
+      goNext();
       return;
     }
 
@@ -1059,31 +1314,6 @@
       showToastIn(win, ok ? ('Copied ' + hex) : 'Copy failed');
     });
     cell.classList.toggle('used');
-  }
-
-  // ---------- center guide marks (red lines just outside the grid) ----------
-
-  function addCenterGuides(gridWrap, gridW, gridH, cellSize, centerXs, centerYs) {
-    centerXs.forEach(x => {
-      const xPos = PAD + x * cellSize + cellSize / 2;
-      ['top', 'bottom'].forEach(side => {
-        const tick = document.createElement('div');
-        tick.className = 'center-guide vertical';
-        tick.style.left = xPos + 'px';
-        tick.style[side] = '-7px';
-        gridWrap.appendChild(tick);
-      });
-    });
-    centerYs.forEach(y => {
-      const yPos = PAD + y * cellSize + cellSize / 2;
-      ['left', 'right'].forEach(side => {
-        const tick = document.createElement('div');
-        tick.className = 'center-guide horizontal';
-        tick.style.top = yPos + 'px';
-        tick.style[side] = '-7px';
-        gridWrap.appendChild(tick);
-      });
-    });
   }
 
   // ---------- image + grid building ----------
@@ -1107,11 +1337,31 @@
     const gridWrap = document.createElement('div');
     gridWrap.className = 'grid-wrap';
 
+    // RGB alignment reference squares: red flush with the right edge,
+    // green next, blue next, going right-to-left.
+    const stripCount = Math.min(3, gridW);
+    if (stripCount > 0) {
+      const stripEl = document.createElement('div');
+      stripEl.className = 'marker-strip';
+      const colors = ['blue', 'green', 'red'].slice(3 - stripCount);
+      colors.forEach(color => {
+        const sq = document.createElement('div');
+        sq.className = 'marker-square marker-' + color;
+        sq.style.width = cellSize + 'px';
+        sq.style.height = cellSize + 'px';
+        sq.title = color[0].toUpperCase() + color.slice(1) + ' alignment marker — click to mark placed';
+        sq.addEventListener('click', () => sq.classList.toggle('checked'));
+        stripEl.appendChild(sq);
+      });
+      gridWrap.appendChild(stripEl);
+    }
+
     const grid = document.createElement('div');
     grid.className = 'grid';
     grid.style.gridTemplateColumns = `repeat(${gridW}, ${cellSize}px)`;
     grid.style.gridTemplateRows = `repeat(${gridH}, ${cellSize}px)`;
 
+    // If there's no single center square (even dimension), mark the center two.
     const centerXs = gridW % 2 === 1 ? [(gridW - 1) / 2] : [gridW / 2 - 1, gridW / 2];
     const centerYs = gridH % 2 === 1 ? [(gridH - 1) / 2] : [gridH / 2 - 1, gridH / 2];
 
@@ -1128,6 +1378,19 @@
         cell.style.background = hex;
         cell.title = hex;
         cell.dataset.hex = hex;
+        cell.dataset.row = y;
+        cell.dataset.col = x;
+
+        if (centerXs.includes(x)) {
+          const tick = document.createElement('span');
+          tick.className = 'center-tick center-tick-v';
+          cell.appendChild(tick);
+        }
+        if (centerYs.includes(y)) {
+          const tick = document.createElement('span');
+          tick.className = 'center-tick center-tick-h';
+          cell.appendChild(tick);
+        }
 
         const cellIndex = orderedCells.length;
         cell.addEventListener('click', () => handleCellClick(cellIndex));
@@ -1138,7 +1401,10 @@
     }
 
     gridWrap.appendChild(grid);
-    addCenterGuides(gridWrap, gridW, gridH, cellSize, centerXs, centerYs);
+
+    gridWrap.addEventListener('click', (e) => {
+      if (autoModeEnabled && e.target === gridWrap) goNext();
+    });
 
     return gridWrap;
   }
