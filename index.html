@@ -12,12 +12,19 @@
     color: #111111;
   }
 
-  .topbar {
+  .toolbar-row {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-end;
     gap: 16px;
-    padding: 16px 20px;
+    padding: 12px 20px;
+  }
+
+  .toolbar-row + .toolbar-row {
+    border-top: 1px solid #eeeeee;
+  }
+
+  .topbar {
     border-bottom: 1px solid #dddddd;
   }
 
@@ -35,7 +42,8 @@
   }
 
   input[type="file"],
-  input[type="number"] {
+  input[type="number"],
+  select {
     border: 1px solid #cccccc;
     padding: 8px 10px;
     font-size: 14px;
@@ -70,7 +78,6 @@
     font-size: 14px;
     cursor: pointer;
     height: fit-content;
-    align-self: flex-end;
   }
 
   button:hover {
@@ -99,6 +106,21 @@
     border-color: #cccccc;
   }
 
+  .accent-btn {
+    background: #b91c1c;
+    border-color: #b91c1c;
+  }
+
+  .accent-btn:hover:not(:disabled) {
+    background: #7f1414;
+    border-color: #7f1414;
+  }
+
+  .accent-btn:disabled {
+    background: #cccccc;
+    border-color: #cccccc;
+  }
+
   .info {
     font-size: 13px;
     color: #666666;
@@ -111,6 +133,7 @@
 
   .grid-wrap {
     display: inline-block;
+    position: relative;
     border: 1px solid #dddddd;
     padding: 6px;
     background: #ffffff;
@@ -165,15 +188,23 @@
     z-index: 2;
   }
 
-  .center-marker {
+  .center-guide {
     position: absolute;
-    left: 15%;
-    right: 15%;
-    bottom: 0;
-    height: 3px;
-    background: #111111;
+    background: #d32020;
     pointer-events: none;
-    z-index: 3;
+    z-index: 6;
+  }
+
+  .center-guide.vertical {
+    width: 2px;
+    height: 7px;
+    margin-left: -1px;
+  }
+
+  .center-guide.horizontal {
+    height: 2px;
+    width: 7px;
+    margin-top: -1px;
   }
 
   .placeholder {
@@ -195,7 +226,7 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.15s ease, transform 0.15s ease;
-    z-index: 999;
+    z-index: 2000;
   }
 
   .toast.show {
@@ -203,38 +234,195 @@
     transform: translateX(-50%) translateY(0);
   }
 
-  .auto-controls {
+  .resume-banner {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    padding: 10px 20px;
+    border-bottom: 2px solid #b91c1c;
+    background: #ffffff;
     font-size: 13px;
   }
 
-  .auto-controls .auto-toggle {
+  .resume-banner button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .resume-dismiss {
+    background: #ffffff;
+    color: #111111;
+    border: 1px solid #cccccc;
+  }
+
+  .resume-dismiss:hover {
+    background: #f2f2f2;
+  }
+
+  /* --- Auto mode panel --- */
+
+  .auto-panel {
+    background: #ffffff;
+    border: 2px solid #111111;
+    font-size: 13px;
+    color: #111111;
+  }
+
+  .auto-panel.floating {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 300px;
+    z-index: 1000;
+    padding: 14px;
+  }
+
+  .auto-panel.pip {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 14px;
+    border: none;
+    border-bottom: 2px solid #111111;
+    flex-shrink: 0;
+  }
+
+  .auto-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .auto-panel-header strong {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .auto-exit-btn {
+    border: 1px solid #111111;
+    background: #ffffff;
+    color: #111111;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .auto-exit-btn:hover {
+    background: #111111;
+    color: #ffffff;
+  }
+
+  .auto-panel-sub {
+    font-size: 12px;
+    color: #666666;
+    margin-bottom: 4px;
+  }
+
+  .auto-swatch-row {
+    display: flex;
+    gap: 12px;
+    margin: 10px 0;
+  }
+
+  .auto-swatch-col {
+    flex: 1;
+    text-align: center;
+  }
+
+  .auto-swatch-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #999999;
+    margin-bottom: 4px;
+  }
+
+  .auto-swatch {
+    width: 100%;
+    height: 44px;
+    border: 1px solid #cccccc;
+  }
+
+  .auto-swatch-current {
+    height: 56px;
+    border: 2px solid #111111;
+  }
+
+  .auto-swatch-hex {
+    font-size: 11px;
+    margin-top: 4px;
+    font-family: monospace;
+  }
+
+  .auto-order-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .auto-order-row select {
+    flex: 1;
+    padding: 5px 6px;
+    font-size: 12px;
+  }
+
+  .auto-btn-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .auto-nav-btn {
+    flex: 1;
+    border: 1px solid #111111;
+    background: #ffffff;
+    color: #111111;
+    padding: 8px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .auto-nav-btn:hover:not(:disabled) {
+    background: #111111;
+    color: #ffffff;
+  }
+
+  .auto-nav-btn:disabled {
+    color: #cccccc;
+    border-color: #cccccc;
+    cursor: not-allowed;
+  }
+
+  .auto-bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .auto-sound-toggle {
+    font-size: 12px;
     display: flex;
     align-items: center;
     gap: 4px;
     cursor: pointer;
-    white-space: nowrap;
   }
 
-  .auto-controls select {
-    border: 1px solid #cccccc;
-    padding: 6px 8px;
-    font-size: 13px;
-    background: #ffffff;
-    color: #111111;
-    outline: none;
+  .auto-save-btn {
+    border: 1px solid #111111;
+    background: #111111;
+    color: #ffffff;
+    padding: 7px 12px;
+    font-size: 12px;
+    cursor: pointer;
   }
 
-  .auto-controls.pip-bar {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 8px 12px;
-    border-bottom: 1px solid #dddddd;
-    background: #ffffff;
-    flex-shrink: 0;
-    justify-content: center;
+  .auto-save-btn:hover {
+    background: #333333;
   }
 
   .pip-grid-area {
@@ -243,43 +431,63 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-    cursor: pointer;
+    overflow: auto;
   }
 </style>
 </head>
 <body>
 
+<div id="resumeBannerSlot"></div>
+
 <div class="topbar">
-  <div class="field">
-    <label for="imageInput">Image</label>
-    <input type="file" id="imageInput" accept="image/*">
+  <div class="toolbar-row">
+    <div class="field">
+      <label for="imageInput">Image</label>
+      <input type="file" id="imageInput" accept="image/*">
+    </div>
+
+    <div class="field">
+      <label for="widthInput">Grid width (blocks)</label>
+      <input type="number" id="widthInput" value="32" min="1" max="256">
+    </div>
+
+    <div class="field">
+      <label for="heightInput">Grid height (blocks)</label>
+      <input type="number" id="heightInput" value="32" min="1" max="256">
+    </div>
+
+    <div class="field">
+      <label for="cellSizeInput">Square size (px)</label>
+      <input type="number" id="cellSizeInput" value="22" min="4" max="64">
+    </div>
+
+    <button id="generateBtn" disabled>Generate</button>
+    <button id="pipBtn" disabled>Pop out</button>
+
+    <div class="info" id="infoText"></div>
   </div>
 
-  <div class="field">
-    <label for="widthInput">Grid width (blocks)</label>
-    <input type="number" id="widthInput" value="32" min="1" max="256">
+  <div class="toolbar-row">
+    <div class="field">
+      <label for="cornerSelect">Start corner</label>
+      <select id="cornerSelect">
+        <option value="tl">Top-left</option>
+        <option value="tr">Top-right</option>
+        <option value="bl">Bottom-left</option>
+        <option value="br">Bottom-right</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="directionSelect">Direction</label>
+      <select id="directionSelect">
+        <option value="horizontal">Row by row</option>
+        <option value="vertical">Column by column</option>
+      </select>
+    </div>
+
+    <button id="startAutoBtn" class="accent-btn" disabled>Start Auto Mode</button>
   </div>
-
-  <div class="field">
-    <label for="heightInput">Grid height (blocks)</label>
-    <input type="number" id="heightInput" value="32" min="1" max="256">
-  </div>
-
-  <div class="field">
-    <label for="cellSizeInput">Square size (px)</label>
-    <input type="number" id="cellSizeInput" value="22" min="4" max="64">
-  </div>
-
-  <button id="generateBtn" disabled>Generate</button>
-  <button id="pipBtn" disabled>Pop out</button>
-
-  <div class="field">
-    <label>Auto mode</label>
-    <div id="autoControlsSlot"></div>
-  </div>
-
-  <div class="info" id="infoText"></div>
 </div>
 
 <div class="stage" id="stage">
@@ -297,33 +505,40 @@
   const cellSizeInput = document.getElementById('cellSizeInput');
   const generateBtn = document.getElementById('generateBtn');
   const pipBtn = document.getElementById('pipBtn');
-  const autoControlsSlot = document.getElementById('autoControlsSlot');
+  const cornerSelect = document.getElementById('cornerSelect');
+  const directionSelect = document.getElementById('directionSelect');
+  const startAutoBtn = document.getElementById('startAutoBtn');
   const stage = document.getElementById('stage');
   const infoText = document.getElementById('infoText');
+  const resumeBannerSlot = document.getElementById('resumeBannerSlot');
   const workCanvas = document.getElementById('workCanvas');
   const ctx = workCanvas.getContext('2d', { willReadFrequently: true });
 
+  const PAD = 6;
+  const BORDER = 1;
+  const SESSION_KEY = 'pixelGridSession';
+
   let loadedImage = null;
+  let loadedImageDataURL = null;
   let currentGridWrap = null;
   let pipWindow = null;
   let gridDims = { w: 0, h: 0 };
 
-  // ordered list of cell elements, top-left to bottom-right
+  // all cells, top-left to bottom-right, row-major
   let orderedCells = [];
-  // the order auto mode walks through (reversed if starting from the bottom)
+  // the walk order auto mode currently uses
   let sequence = [];
 
   let autoModeEnabled = false;
-  let autoDirection = 'top'; // 'top' or 'bottom'
+  let startCorner = 'tl';
+  let sweepDirection = 'horizontal';
   let autoPointer = -1;
+  let currentHex = null;
+  let previousHex = null;
+  let soundEnabled = true;
   let awaitingReturn = false;
-  let suppressNextClick = false;
   let watchedWindow = null;
-  let autoControlInstances = [];
-
-  const PAD = 6;
-  const BORDER = 1;
-  const CONTROLS_H = 42;
+  let autoPanelInstances = [];
 
   if (!('documentPictureInPicture' in window)) {
     pipBtn.title = 'Picture-in-picture is not supported in this browser (try Chrome or Edge).';
@@ -334,10 +549,15 @@
   }
 
   function pipContentSize(gridW, gridH, cellSize) {
-    return {
-      w: gridW * cellSize + (PAD + BORDER) * 2,
-      h: gridH * cellSize + (PAD + BORDER) * 2 + CONTROLS_H
-    };
+    const gridPixelW = gridW * cellSize + (PAD + BORDER) * 2;
+    const gridPixelH = gridH * cellSize + (PAD + BORDER) * 2;
+    const barH = autoModeEnabled ? 340 : 0;
+    const w = autoModeEnabled ? Math.max(gridPixelW, 280) : gridPixelW;
+    return { w, h: gridPixelH + barH };
+  }
+
+  function rgbToHex(r, g, b) {
+    return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
   }
 
   // ---------- clipboard ----------
@@ -369,9 +589,6 @@
     }
   }
 
-  // tries the original page window first (it usually holds clipboard permission
-  // most reliably), then the window that currently owns the cell (e.g. a PiP
-  // window), then falls back to the legacy copy command on both
   async function copyToClipboard(text, cellWin) {
     if (await tryClipboardWrite(window, text)) return true;
     if (cellWin !== window && await tryClipboardWrite(cellWin, text)) return true;
@@ -393,151 +610,138 @@
     t._timer = setTimeout(() => t.classList.remove('show'), 1200);
   }
 
-  function rgbToHex(r, g, b) {
-    return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
-  }
-
-  // ---------- auto mode controls (mirrored in main page + PiP popup) ----------
-
-  function syncAutoControls() {
-    autoControlInstances = autoControlInstances.filter(inst => inst.checkbox.isConnected);
-    autoControlInstances.forEach(({ checkbox, select }) => {
-      checkbox.checked = autoModeEnabled;
-      select.value = autoDirection;
-    });
-  }
-
-  function createAutoControls(doc, extraClass) {
-    const wrap = doc.createElement('div');
-    wrap.className = 'auto-controls' + (extraClass ? ' ' + extraClass : '');
-    // don't let clicks on the controls themselves bubble into the
-    // "click anywhere to advance" popup handler
-    wrap.addEventListener('click', e => e.stopPropagation());
-
-    const cbLabel = doc.createElement('label');
-    cbLabel.className = 'auto-toggle';
-    const checkbox = doc.createElement('input');
-    checkbox.type = 'checkbox';
-    cbLabel.appendChild(checkbox);
-    cbLabel.appendChild(doc.createTextNode(' Auto'));
-
-    const select = doc.createElement('select');
-    const optTop = doc.createElement('option');
-    optTop.value = 'top';
-    optTop.textContent = 'From top';
-    const optBottom = doc.createElement('option');
-    optBottom.value = 'bottom';
-    optBottom.textContent = 'From bottom';
-    select.appendChild(optTop);
-    select.appendChild(optBottom);
-
-    checkbox.checked = autoModeEnabled;
-    select.value = autoDirection;
-
-    checkbox.addEventListener('change', () => {
-      if (checkbox.checked) {
-        startAuto(select.value);
-      } else {
-        stopAuto();
+  function announceCopy() {
+    if (!soundEnabled) return;
+    try {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance('Copied');
+        u.rate = 1.4;
+        u.volume = 0.6;
+        window.speechSynthesis.speak(u);
       }
-    });
-
-    select.addEventListener('change', () => {
-      autoDirection = select.value;
-      if (autoModeEnabled) {
-        startAuto(autoDirection);
-      } else {
-        syncAutoControls();
-      }
-    });
-
-    wrap.appendChild(cbLabel);
-    wrap.appendChild(select);
-
-    autoControlInstances.push({ checkbox, select });
-    return wrap;
+    } catch (err) { /* ignore */ }
   }
 
   // ---------- auto mode engine ----------
 
-  function buildSequence() {
-    sequence = autoDirection === 'bottom' ? orderedCells.slice().reverse() : orderedCells.slice();
+  function buildSequenceFromOrder(corner, direction) {
+    const gw = gridDims.w, gh = gridDims.h;
+    const xs = []; for (let x = 0; x < gw; x++) xs.push(x);
+    const ys = []; for (let y = 0; y < gh; y++) ys.push(y);
+
+    const startLeft = corner === 'tl' || corner === 'bl';
+    const startTop = corner === 'tl' || corner === 'tr';
+
+    const orderedXs = startLeft ? xs : xs.slice().reverse();
+    const orderedYs = startTop ? ys : ys.slice().reverse();
+
+    const seq = [];
+    if (direction === 'vertical') {
+      for (const x of orderedXs) for (const y of orderedYs) seq.push(orderedCells[y * gw + x]);
+    } else {
+      for (const y of orderedYs) for (const x of orderedXs) seq.push(orderedCells[y * gw + x]);
+    }
+    return seq;
+  }
+
+  function applyOrder(corner, direction, keepProgress) {
+    startCorner = corner;
+    sweepDirection = direction;
+    sequence = buildSequenceFromOrder(corner, direction);
+    if (keepProgress) {
+      const idx = sequence.findIndex(c => !c.classList.contains('used'));
+      autoPointer = idx === -1 ? sequence.length - 1 : idx;
+    } else {
+      autoPointer = 0;
+    }
   }
 
   function activateCell(cell) {
     orderedCells.forEach(c => c.classList.remove('current'));
-    // mark used immediately on copy — no need to advance first to see the checkmark
+    if (currentHex !== null) previousHex = currentHex;
     cell.classList.add('used');
     cell.classList.add('current');
+    currentHex = cell.dataset.hex;
 
-    const hex = cell.dataset.hex;
     const win = cell.ownerDocument.defaultView;
-    copyToClipboard(hex, win).then(ok => {
-      showToastIn(win, ok ? ('Copied ' + hex) : 'Copy failed');
+    copyToClipboard(currentHex, win).then(ok => {
+      showToastIn(win, ok ? ('Copied ' + currentHex) : 'Copy failed');
     });
-    updateProgressInfo();
+    announceCopy();
+    updateAutoPanels();
   }
 
-  function updateProgressInfo() {
+  function goNext() {
     if (!autoModeEnabled) return;
-    const usedCount = orderedCells.filter(c => c.classList.contains('used')).length;
-    infoText.textContent = `Square ${usedCount} of ${orderedCells.length} — paste, then tab back (or click the popup)`;
-  }
-
-  function advanceAuto() {
-    if (!autoModeEnabled) return;
-    let next = autoPointer + 1;
-    while (next < sequence.length && sequence[next].classList.contains('used')) next++;
-
-    if (next >= sequence.length) {
-      stopAuto('All done!');
+    if (autoPointer >= sequence.length - 1) {
+      showToastIn(getActiveWindow(), 'All done!');
       return;
     }
-
-    autoPointer = next;
+    autoPointer += 1;
     activateCell(sequence[autoPointer]);
   }
 
-  function startAuto(direction) {
-    if (orderedCells.length === 0) {
-      autoModeEnabled = false;
-      syncAutoControls();
-      return;
-    }
-    autoDirection = direction;
-    buildSequence();
-    autoPointer = sequence.findIndex(c => !c.classList.contains('used'));
+  function goBack() {
+    if (!autoModeEnabled) return;
+    if (autoPointer <= 0) return;
+    autoPointer -= 1;
+    activateCell(sequence[autoPointer]);
+  }
 
-    if (autoPointer === -1) {
-      showToastIn(getActiveWindow(), 'All squares already used');
-      autoModeEnabled = false;
-      syncAutoControls();
-      return;
-    }
-
+  function startAuto(corner, direction) {
+    if (orderedCells.length === 0) return;
+    const keepProgress = orderedCells.some(c => c.classList.contains('used'));
+    applyOrder(corner, direction, keepProgress);
     autoModeEnabled = true;
+    currentHex = null;
+    previousHex = null;
     activateCell(sequence[autoPointer]);
+    ensureAutoPanel();
     attachWatcher(getActiveWindow());
-    syncAutoControls();
+    if (pipWindow && currentGridWrap) {
+      resizePipTo(gridDims.w, gridDims.h, parseInt(currentGridWrap.dataset.cellSize, 10));
+    }
   }
 
-  function stopAuto(msg) {
+  function stopAuto() {
     const wasEnabled = autoModeEnabled;
     autoModeEnabled = false;
     autoPointer = -1;
+    currentHex = null;
+    previousHex = null;
     awaitingReturn = false;
     orderedCells.forEach(c => c.classList.remove('current'));
     detachWatcher(watchedWindow);
-    syncAutoControls();
-    if (msg) showToastIn(getActiveWindow(), msg);
-    if (wasEnabled) {
-      infoText.textContent = orderedCells.length
-        ? `${gridDims.w} × ${gridDims.h} = ${orderedCells.length} blocks`
-        : '';
+    removeAutoPanels();
+    if (wasEnabled && pipWindow && currentGridWrap) {
+      resizePipTo(gridDims.w, gridDims.h, parseInt(currentGridWrap.dataset.cellSize, 10));
     }
   }
 
-  // ---------- focus-return + click-anywhere-in-popup detection ----------
+  function saveSession() {
+    if (!loadedImageDataURL || orderedCells.length === 0) return;
+    const usedFlags = orderedCells.map(c => c.classList.contains('used'));
+    const cellSize = currentGridWrap ? parseInt(currentGridWrap.dataset.cellSize, 10) : parseInt(cellSizeInput.value, 10);
+    const data = {
+      imageDataURL: loadedImageDataURL,
+      gridW: gridDims.w,
+      gridH: gridDims.h,
+      cellSize,
+      corner: startCorner,
+      direction: sweepDirection,
+      usedFlags,
+      savedAt: Date.now()
+    };
+    try {
+      localStorage.setItem(SESSION_KEY, JSON.stringify(data));
+      showToastIn(getActiveWindow(), 'Progress saved');
+    } catch (err) {
+      showToastIn(getActiveWindow(), 'Could not save progress');
+    }
+  }
+
+  // ---------- focus-return auto-advance + keyboard shortcuts ----------
 
   function onBlurHandler() {
     if (autoModeEnabled) awaitingReturn = true;
@@ -546,16 +750,24 @@
   function onFocusHandler() {
     if (autoModeEnabled && awaitingReturn) {
       awaitingReturn = false;
-      suppressNextClick = true;
-      advanceAuto();
-      setTimeout(() => { suppressNextClick = false; }, 350);
+      goNext();
     }
   }
 
-  function onDocClickHandler() {
+  function onKeyHandler(e) {
     if (!autoModeEnabled) return;
-    if (suppressNextClick) return;
-    advanceAuto();
+    if (e.key === 'ArrowRight' || e.key === ' ') {
+      e.preventDefault();
+      goNext();
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      goBack();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      const wasPip = pipWindow && watchedWindow === pipWindow;
+      stopAuto();
+      if (wasPip) pipWindow.close();
+    }
   }
 
   function attachWatcher(win) {
@@ -563,22 +775,193 @@
     watchedWindow = win;
     win.addEventListener('blur', onBlurHandler);
     win.addEventListener('focus', onFocusHandler);
-    // "click anywhere to advance" only applies inside the popup — the main
-    // page has lots of unrelated controls that shouldn't trigger it
-    if (win === pipWindow) {
-      win.document.addEventListener('click', onDocClickHandler);
-    }
+    win.addEventListener('keydown', onKeyHandler);
   }
 
   function detachWatcher(win) {
     if (!win) return;
     win.removeEventListener('blur', onBlurHandler);
     win.removeEventListener('focus', onFocusHandler);
-    win.document.removeEventListener('click', onDocClickHandler);
+    win.removeEventListener('keydown', onKeyHandler);
     if (win === watchedWindow) watchedWindow = null;
   }
 
-  // ---------- grid mounting ----------
+  // ---------- auto mode panel (mirrored on main page + PiP popup) ----------
+
+  function createAutoPanel(doc, isPip) {
+    const root = doc.createElement('div');
+    root.className = 'auto-panel' + (isPip ? ' pip' : ' floating');
+    root.addEventListener('click', e => e.stopPropagation());
+
+    const header = doc.createElement('div');
+    header.className = 'auto-panel-header';
+    const title = doc.createElement('strong');
+    title.textContent = 'Auto Mode';
+    const exitBtn = doc.createElement('button');
+    exitBtn.className = 'auto-exit-btn';
+    exitBtn.textContent = '✕';
+    exitBtn.title = 'Exit auto mode';
+    header.appendChild(title);
+    header.appendChild(exitBtn);
+
+    const gridInfoEl = doc.createElement('div');
+    gridInfoEl.className = 'auto-panel-sub';
+    const progressEl = doc.createElement('div');
+    progressEl.className = 'auto-panel-sub';
+
+    const swatchRow = doc.createElement('div');
+    swatchRow.className = 'auto-swatch-row';
+
+    const curCol = doc.createElement('div');
+    curCol.className = 'auto-swatch-col';
+    const curLabel = doc.createElement('div');
+    curLabel.className = 'auto-swatch-label';
+    curLabel.textContent = 'Copy this now';
+    const currentSwatch = doc.createElement('div');
+    currentSwatch.className = 'auto-swatch auto-swatch-current';
+    const currentHexEl = doc.createElement('div');
+    currentHexEl.className = 'auto-swatch-hex';
+    curCol.appendChild(curLabel);
+    curCol.appendChild(currentSwatch);
+    curCol.appendChild(currentHexEl);
+
+    const prevCol = doc.createElement('div');
+    prevCol.className = 'auto-swatch-col';
+    const prevLabel = doc.createElement('div');
+    prevLabel.className = 'auto-swatch-label';
+    prevLabel.textContent = 'Last placed';
+    const prevSwatch = doc.createElement('div');
+    prevSwatch.className = 'auto-swatch auto-swatch-prev';
+    const prevHexEl = doc.createElement('div');
+    prevHexEl.className = 'auto-swatch-hex';
+    prevCol.appendChild(prevLabel);
+    prevCol.appendChild(prevSwatch);
+    prevCol.appendChild(prevHexEl);
+
+    swatchRow.appendChild(curCol);
+    swatchRow.appendChild(prevCol);
+
+    const orderRow = doc.createElement('div');
+    orderRow.className = 'auto-order-row';
+    const pCorner = doc.createElement('select');
+    [['tl', 'Top-left'], ['tr', 'Top-right'], ['bl', 'Bottom-left'], ['br', 'Bottom-right']].forEach(([v, l]) => {
+      const o = doc.createElement('option'); o.value = v; o.textContent = l; pCorner.appendChild(o);
+    });
+    const pDirection = doc.createElement('select');
+    [['horizontal', 'Row by row'], ['vertical', 'Column by column']].forEach(([v, l]) => {
+      const o = doc.createElement('option'); o.value = v; o.textContent = l; pDirection.appendChild(o);
+    });
+    orderRow.appendChild(pCorner);
+    orderRow.appendChild(pDirection);
+
+    const btnRow = doc.createElement('div');
+    btnRow.className = 'auto-btn-row';
+    const backBtn = doc.createElement('button');
+    backBtn.className = 'auto-nav-btn';
+    backBtn.textContent = '← Back';
+    const nextBtn = doc.createElement('button');
+    nextBtn.className = 'auto-nav-btn';
+    nextBtn.textContent = 'Next →';
+    btnRow.appendChild(backBtn);
+    btnRow.appendChild(nextBtn);
+
+    const bottomRow = doc.createElement('div');
+    bottomRow.className = 'auto-bottom-row';
+    const soundLabel = doc.createElement('label');
+    soundLabel.className = 'auto-sound-toggle';
+    const soundToggle = doc.createElement('input');
+    soundToggle.type = 'checkbox';
+    soundLabel.appendChild(soundToggle);
+    soundLabel.appendChild(doc.createTextNode(' Sound'));
+    const saveBtn = doc.createElement('button');
+    saveBtn.className = 'auto-save-btn';
+    saveBtn.textContent = 'Save & Exit';
+    bottomRow.appendChild(soundLabel);
+    bottomRow.appendChild(saveBtn);
+
+    root.appendChild(header);
+    root.appendChild(gridInfoEl);
+    root.appendChild(progressEl);
+    root.appendChild(swatchRow);
+    root.appendChild(orderRow);
+    root.appendChild(btnRow);
+    root.appendChild(bottomRow);
+
+    exitBtn.addEventListener('click', () => {
+      const wasPip = pipWindow && doc === pipWindow.document;
+      stopAuto();
+      if (wasPip) pipWindow.close();
+    });
+    backBtn.addEventListener('click', goBack);
+    nextBtn.addEventListener('click', goNext);
+    saveBtn.addEventListener('click', () => {
+      saveSession();
+      const wasPip = pipWindow && doc === pipWindow.document;
+      stopAuto();
+      if (wasPip) pipWindow.close();
+    });
+    soundToggle.addEventListener('change', () => {
+      soundEnabled = soundToggle.checked;
+      updateAutoPanels();
+    });
+    pCorner.addEventListener('change', () => {
+      applyOrder(pCorner.value, sweepDirection, true);
+      activateCell(sequence[autoPointer]);
+    });
+    pDirection.addEventListener('change', () => {
+      applyOrder(startCorner, pDirection.value, true);
+      activateCell(sequence[autoPointer]);
+    });
+
+    return {
+      doc, root, gridInfoEl, progressEl, currentSwatch, currentHexEl,
+      prevSwatch, prevHexEl, cornerSelect: pCorner, directionSelect: pDirection,
+      backBtn, nextBtn, soundToggle
+    };
+  }
+
+  function ensureAutoPanel() {
+    const win = getActiveWindow();
+    autoPanelInstances = autoPanelInstances.filter(p => {
+      if (p.doc !== win.document) { p.root.remove(); return false; }
+      return true;
+    });
+    if (autoPanelInstances.length === 0) {
+      const isPip = win === pipWindow;
+      const panel = createAutoPanel(win.document, isPip);
+      if (isPip) {
+        win.document.body.insertBefore(panel.root, win.document.body.firstChild);
+      } else {
+        win.document.body.appendChild(panel.root);
+      }
+      autoPanelInstances.push(panel);
+    }
+    updateAutoPanels();
+  }
+
+  function removeAutoPanels() {
+    autoPanelInstances.forEach(p => p.root.remove());
+    autoPanelInstances = [];
+  }
+
+  function updateAutoPanels() {
+    autoPanelInstances = autoPanelInstances.filter(p => p.root.isConnected);
+    autoPanelInstances.forEach(p => {
+      p.gridInfoEl.textContent = `${gridDims.w} × ${gridDims.h} — ${orderedCells.length} squares`;
+      p.progressEl.textContent = sequence.length ? `Square ${autoPointer + 1} of ${sequence.length}` : '';
+      p.currentSwatch.style.background = currentHex || '#ffffff';
+      p.currentHexEl.textContent = currentHex || '—';
+      p.prevSwatch.style.background = previousHex || '#ffffff';
+      p.prevHexEl.textContent = previousHex || '—';
+      p.backBtn.disabled = autoPointer <= 0;
+      p.nextBtn.disabled = autoPointer >= sequence.length - 1;
+      p.cornerSelect.value = startCorner;
+      p.directionSelect.value = sweepDirection;
+      p.soundToggle.checked = soundEnabled;
+    });
+  }
+
+  // ---------- grid mounting + PiP ----------
 
   function resizePipTo(gridW, gridH, cellSize) {
     if (!pipWindow) return;
@@ -586,10 +969,6 @@
     try { pipWindow.resizeTo(size.w, size.h); } catch (err) { /* ignore */ }
   }
 
-  // always mounts the grid into whichever container is actually on screen —
-  // the PiP window if it's open, otherwise the main page. This matters because
-  // regenerating while popped out must replace the PiP content, not the
-  // (invisible) main page, or clicks end up targeting stale cells.
   function mountGrid(gridWrap, gridW, gridH, cellSize) {
     currentGridWrap = gridWrap;
     gridWrap.dataset.gridW = gridW;
@@ -612,6 +991,52 @@
     }
 
     pipBtn.disabled = !('documentPictureInPicture' in window);
+    startAutoBtn.disabled = false;
+  }
+
+  async function openPip() {
+    if (pipWindow) return pipWindow;
+    if (!('documentPictureInPicture' in window)) return null;
+    if (!currentGridWrap) return null;
+
+    const gridW = parseInt(currentGridWrap.dataset.gridW, 10);
+    const gridH = parseInt(currentGridWrap.dataset.gridH, 10);
+    const cellSize = parseInt(currentGridWrap.dataset.cellSize, 10);
+    const size = pipContentSize(gridW, gridH, cellSize);
+
+    pipWindow = await documentPictureInPicture.requestWindow({ width: size.w, height: size.h });
+
+    for (const styleEl of document.querySelectorAll('style')) {
+      pipWindow.document.head.appendChild(styleEl.cloneNode(true));
+    }
+
+    pipWindow.document.body.style.margin = '0';
+    pipWindow.document.body.style.background = '#ffffff';
+    pipWindow.document.body.style.overflow = 'hidden';
+    pipWindow.document.body.style.display = 'flex';
+    pipWindow.document.body.style.flexDirection = 'column';
+    pipWindow.document.body.style.height = '100vh';
+
+    mountGrid(currentGridWrap, gridW, gridH, cellSize);
+
+    const wasAuto = autoModeEnabled;
+    if (wasAuto) {
+      attachWatcher(pipWindow);
+      ensureAutoPanel();
+    }
+
+    pipWindow.addEventListener('pagehide', () => {
+      const stillAuto = autoModeEnabled;
+      pipWindow = null;
+      stage.innerHTML = '';
+      stage.appendChild(currentGridWrap);
+      if (stillAuto) {
+        attachWatcher(window);
+        ensureAutoPanel();
+      }
+    }, { once: true });
+
+    return pipWindow;
   }
 
   // ---------- cell click handling ----------
@@ -619,36 +1044,183 @@
   function handleCellClick(index) {
     const cell = orderedCells[index];
 
-    // inside the popup, any click (cell or background) just advances auto mode —
-    // handled by the document-level click-anywhere listener instead
-    if (pipWindow && cell.ownerDocument === pipWindow.document) {
+    if (autoModeEnabled) {
+      const idx = sequence.indexOf(cell);
+      if (idx !== -1) {
+        autoPointer = idx;
+        activateCell(cell);
+      }
       return;
     }
 
     const hex = cell.dataset.hex;
     const win = cell.ownerDocument.defaultView;
-
-    if (autoModeEnabled) {
-      const idx = sequence.indexOf(cell);
-      if (idx !== -1) {
-        autoPointer = idx;
-        awaitingReturn = false;
-        activateCell(cell);
-      }
-    } else {
-      copyToClipboard(hex, win).then(ok => {
-        showToastIn(win, ok ? ('Copied ' + hex) : 'Copy failed');
-      });
-      cell.classList.toggle('used');
-    }
+    copyToClipboard(hex, win).then(ok => {
+      showToastIn(win, ok ? ('Copied ' + hex) : 'Copy failed');
+    });
+    cell.classList.toggle('used');
   }
 
-  // ---------- image + grid generation ----------
+  // ---------- center guide marks (red lines just outside the grid) ----------
+
+  function addCenterGuides(gridWrap, gridW, gridH, cellSize, centerXs, centerYs) {
+    centerXs.forEach(x => {
+      const xPos = PAD + x * cellSize + cellSize / 2;
+      ['top', 'bottom'].forEach(side => {
+        const tick = document.createElement('div');
+        tick.className = 'center-guide vertical';
+        tick.style.left = xPos + 'px';
+        tick.style[side] = '-7px';
+        gridWrap.appendChild(tick);
+      });
+    });
+    centerYs.forEach(y => {
+      const yPos = PAD + y * cellSize + cellSize / 2;
+      ['left', 'right'].forEach(side => {
+        const tick = document.createElement('div');
+        tick.className = 'center-guide horizontal';
+        tick.style.top = yPos + 'px';
+        tick.style[side] = '-7px';
+        gridWrap.appendChild(tick);
+      });
+    });
+  }
+
+  // ---------- image + grid building ----------
+
+  function buildGridFromImage(img, gridW, gridH, cellSize) {
+    workCanvas.width = gridW;
+    workCanvas.height = gridH;
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(img, 0, 0, gridW, gridH);
+
+    let pixelData;
+    try {
+      pixelData = ctx.getImageData(0, 0, gridW, gridH).data;
+    } catch (err) {
+      return null;
+    }
+
+    orderedCells = [];
+    gridDims = { w: gridW, h: gridH };
+
+    const gridWrap = document.createElement('div');
+    gridWrap.className = 'grid-wrap';
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    grid.style.gridTemplateColumns = `repeat(${gridW}, ${cellSize}px)`;
+    grid.style.gridTemplateRows = `repeat(${gridH}, ${cellSize}px)`;
+
+    const centerXs = gridW % 2 === 1 ? [(gridW - 1) / 2] : [gridW / 2 - 1, gridW / 2];
+    const centerYs = gridH % 2 === 1 ? [(gridH - 1) / 2] : [gridH / 2 - 1, gridH / 2];
+
+    for (let y = 0; y < gridH; y++) {
+      for (let x = 0; x < gridW; x++) {
+        const idx = (y * gridW + x) * 4;
+        const r = pixelData[idx], g = pixelData[idx + 1], b = pixelData[idx + 2];
+        const hex = rgbToHex(r, g, b);
+
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.style.width = cellSize + 'px';
+        cell.style.height = cellSize + 'px';
+        cell.style.background = hex;
+        cell.title = hex;
+        cell.dataset.hex = hex;
+
+        const cellIndex = orderedCells.length;
+        cell.addEventListener('click', () => handleCellClick(cellIndex));
+        orderedCells.push(cell);
+
+        grid.appendChild(cell);
+      }
+    }
+
+    gridWrap.appendChild(grid);
+    addCenterGuides(gridWrap, gridW, gridH, cellSize, centerXs, centerYs);
+
+    return gridWrap;
+  }
+
+  // ---------- resume from localStorage ----------
+
+  function offerResume() {
+    let raw;
+    try { raw = localStorage.getItem(SESSION_KEY); } catch (err) { return; }
+    if (!raw) return;
+    let data;
+    try { data = JSON.parse(raw); } catch (err) { return; }
+    if (!data || !data.imageDataURL || !data.gridW || !data.gridH) return;
+
+    const usedCount = Array.isArray(data.usedFlags) ? data.usedFlags.filter(Boolean).length : 0;
+    const total = data.gridW * data.gridH;
+
+    const banner = document.createElement('div');
+    banner.className = 'resume-banner';
+
+    const text = document.createElement('span');
+    text.textContent = `Saved session found — ${data.gridW} × ${data.gridH}, ${usedCount} of ${total} placed.`;
+
+    const resumeBtn = document.createElement('button');
+    resumeBtn.textContent = 'Resume';
+
+    const dismissBtn = document.createElement('button');
+    dismissBtn.className = 'resume-dismiss';
+    dismissBtn.textContent = 'Dismiss';
+
+    resumeBtn.addEventListener('click', () => {
+      resumeSession(data);
+      banner.remove();
+    });
+    dismissBtn.addEventListener('click', () => {
+      try { localStorage.removeItem(SESSION_KEY); } catch (err) { /* ignore */ }
+      banner.remove();
+    });
+
+    banner.appendChild(text);
+    banner.appendChild(resumeBtn);
+    banner.appendChild(dismissBtn);
+    resumeBannerSlot.appendChild(banner);
+  }
+
+  function resumeSession(data) {
+    const img = new Image();
+    img.onload = () => {
+      loadedImage = img;
+      loadedImageDataURL = data.imageDataURL;
+      generateBtn.disabled = false;
+      widthInput.value = data.gridW;
+      heightInput.value = data.gridH;
+      cellSizeInput.value = data.cellSize;
+
+      stopAuto();
+      const gridWrap = buildGridFromImage(img, data.gridW, data.gridH, data.cellSize);
+      if (!gridWrap) return;
+
+      if (Array.isArray(data.usedFlags)) {
+        data.usedFlags.forEach((used, i) => {
+          if (used && orderedCells[i]) orderedCells[i].classList.add('used');
+        });
+      }
+
+      mountGrid(gridWrap, data.gridW, data.gridH, data.cellSize);
+      infoText.textContent = `${data.gridW} × ${data.gridH} = ${data.gridW * data.gridH} blocks`;
+      cornerSelect.value = data.corner || 'tl';
+      directionSelect.value = data.direction || 'horizontal';
+
+      startAuto(data.corner || 'tl', data.direction || 'horizontal');
+    };
+    img.src = data.imageDataURL;
+  }
+
+  // ---------- events ----------
 
   imageInput.addEventListener('change', () => {
     const file = imageInput.files[0];
     if (!file) {
       loadedImage = null;
+      loadedImageDataURL = null;
       generateBtn.disabled = true;
       return;
     }
@@ -657,9 +1229,9 @@
       const img = new Image();
       img.onload = () => {
         loadedImage = img;
+        loadedImageDataURL = e.target.result;
         generateBtn.disabled = false;
 
-        // suggest a height that preserves aspect ratio based on current width
         const w = parseInt(widthInput.value, 10) || 32;
         const ratio = img.height / img.width;
         heightInput.value = Math.max(1, Math.round(w * ratio));
@@ -676,6 +1248,12 @@
     heightInput.value = Math.max(1, Math.round(w * ratio));
   });
 
+  [widthInput, heightInput, cellSizeInput].forEach(inp => {
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !generateBtn.disabled) generateBtn.click();
+    });
+  });
+
   generateBtn.addEventListener('click', () => {
     if (!loadedImage) return;
 
@@ -683,73 +1261,15 @@
     const gridH = Math.max(1, Math.min(256, parseInt(heightInput.value, 10) || 32));
     const cellSize = Math.max(4, Math.min(64, parseInt(cellSizeInput.value, 10) || 22));
 
-    // reset auto mode / watchers from any previous grid
     stopAuto();
-    orderedCells = [];
-    gridDims = { w: gridW, h: gridH };
-
-    // downsample the image to gridW x gridH so each pixel = one cell's average color
-    workCanvas.width = gridW;
-    workCanvas.height = gridH;
-    ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(loadedImage, 0, 0, gridW, gridH);
-
-    let pixelData;
-    try {
-      pixelData = ctx.getImageData(0, 0, gridW, gridH).data;
-    } catch (err) {
+    const gridWrap = buildGridFromImage(loadedImage, gridW, gridH, cellSize);
+    if (!gridWrap) {
       stage.innerHTML = '<div class="placeholder">Could not read image data (possibly a cross-origin image).</div>';
       return;
     }
-
-    const gridWrap = document.createElement('div');
-    gridWrap.className = 'grid-wrap';
-
-    const grid = document.createElement('div');
-    grid.className = 'grid';
-    grid.style.gridTemplateColumns = `repeat(${gridW}, ${cellSize}px)`;
-    grid.style.gridTemplateRows = `repeat(${gridH}, ${cellSize}px)`;
-
-    // which column(s) mark the center — one if odd width, two ("the center two") if even
-    const centerXs = gridW % 2 === 1 ? [(gridW - 1) / 2] : [gridW / 2 - 1, gridW / 2];
-
-    for (let y = 0; y < gridH; y++) {
-      for (let x = 0; x < gridW; x++) {
-        const idx = (y * gridW + x) * 4;
-        const r = pixelData[idx];
-        const g = pixelData[idx + 1];
-        const b = pixelData[idx + 2];
-        const hex = rgbToHex(r, g, b);
-
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-        cell.style.width = cellSize + 'px';
-        cell.style.height = cellSize + 'px';
-        cell.style.background = hex;
-        cell.title = hex;
-        cell.dataset.hex = hex;
-
-        if (y === gridH - 1 && centerXs.includes(x)) {
-          const marker = document.createElement('div');
-          marker.className = 'center-marker';
-          cell.appendChild(marker);
-        }
-
-        const cellIndex = orderedCells.length;
-        cell.addEventListener('click', () => handleCellClick(cellIndex));
-        orderedCells.push(cell);
-
-        grid.appendChild(cell);
-      }
-    }
-
-    gridWrap.appendChild(grid);
     mountGrid(gridWrap, gridW, gridH, cellSize);
-
     infoText.textContent = `${gridW} × ${gridH} = ${gridW * gridH} blocks`;
   });
-
-  // ---------- pop out to PiP ----------
 
   pipBtn.addEventListener('click', async () => {
     if (!currentGridWrap) return;
@@ -757,49 +1277,20 @@
       showToastIn(window, 'PiP not supported in this browser');
       return;
     }
+    await openPip();
+  });
 
-    const gridW = parseInt(currentGridWrap.dataset.gridW, 10);
-    const gridH = parseInt(currentGridWrap.dataset.gridH, 10);
-    const cellSize = parseInt(currentGridWrap.dataset.cellSize, 10);
-    const size = pipContentSize(gridW, gridH, cellSize);
-
-    pipWindow = await documentPictureInPicture.requestWindow({
-      width: size.w,
-      height: size.h
-    });
-
-    // copy the page's styles so cells/toast/etc render identically
-    for (const styleEl of document.querySelectorAll('style')) {
-      pipWindow.document.head.appendChild(styleEl.cloneNode(true));
+  startAutoBtn.addEventListener('click', async () => {
+    if (!currentGridWrap) return;
+    if ('documentPictureInPicture' in window) {
+      await openPip();
     }
-
-    pipWindow.document.body.style.margin = '0';
-    pipWindow.document.body.style.background = '#ffffff';
-    pipWindow.document.body.style.overflow = 'hidden';
-    pipWindow.document.body.style.display = 'flex';
-    pipWindow.document.body.style.flexDirection = 'column';
-    pipWindow.document.body.style.height = '100vh';
-
-    // mirrored auto-mode controls, editable right in the popup
-    const bar = createAutoControls(pipWindow.document, 'pip-bar');
-    pipWindow.document.body.appendChild(bar);
-
-    // move the live node (not a clone) so click handlers keep working
-    mountGrid(currentGridWrap, gridW, gridH, cellSize);
-
-    if (autoModeEnabled) attachWatcher(pipWindow);
-
-    pipWindow.addEventListener('pagehide', () => {
-      pipWindow = null;
-      stage.innerHTML = '';
-      stage.appendChild(currentGridWrap);
-      if (autoModeEnabled) attachWatcher(window);
-    }, { once: true });
+    startAuto(cornerSelect.value, directionSelect.value);
   });
 
   // ---------- init ----------
 
-  autoControlsSlot.appendChild(createAutoControls(document));
+  offerResume();
 </script>
 
 </body>
