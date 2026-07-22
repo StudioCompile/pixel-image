@@ -195,11 +195,56 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 999;
   }
 
   .toast.show {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+  }
+
+  .auto-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .auto-controls .auto-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .auto-controls select {
+    border: 1px solid #cccccc;
+    padding: 6px 8px;
+    font-size: 13px;
+    background: #ffffff;
+    color: #111111;
+    outline: none;
+  }
+
+  .auto-controls.pip-bar {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 12px;
+    border-bottom: 1px solid #dddddd;
+    background: #ffffff;
+    flex-shrink: 0;
+    justify-content: center;
+  }
+
+  .pip-grid-area {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
   }
 </style>
 </head>
@@ -230,8 +275,8 @@
   <button id="pipBtn" disabled>Pop out</button>
 
   <div class="field">
-    <label for="autoModeCheckbox">Auto mode</label>
-    <input type="checkbox" id="autoModeCheckbox" title="Copies each square in order. Alt-tab back after pasting and the next square copies itself automatically.">
+    <label>Auto mode</label>
+    <div id="autoControlsSlot"></div>
   </div>
 
   <div class="info" id="infoText"></div>
@@ -252,24 +297,33 @@
   const cellSizeInput = document.getElementById('cellSizeInput');
   const generateBtn = document.getElementById('generateBtn');
   const pipBtn = document.getElementById('pipBtn');
-  const autoModeCheckbox = document.getElementById('autoModeCheckbox');
+  const autoControlsSlot = document.getElementById('autoControlsSlot');
   const stage = document.getElementById('stage');
   const infoText = document.getElementById('infoText');
-  const toast = document.getElementById('toast');
   const workCanvas = document.getElementById('workCanvas');
   const ctx = workCanvas.getContext('2d', { willReadFrequently: true });
 
   let loadedImage = null;
   let currentGridWrap = null;
   let pipWindow = null;
-
-  // ordered list of cell elements for the current grid (top-left to bottom-right)
-  let orderedCells = [];
-  let autoModeEnabled = false;
-  let autoCurrentIndex = -1;
-  let awaitingReturn = false;
-  let watchedWindow = null;
   let gridDims = { w: 0, h: 0 };
+
+  // ordered list of cell elements, top-left to bottom-right
+  let orderedCells = [];
+  // the order auto mode walks through (reversed if starting from the bottom)
+  let sequence = [];
+
+  let autoModeEnabled = false;
+  let autoDirection = 'top'; // 'top' or 'bottom'
+  let autoPointer = -1;
+  let awaitingReturn = false;
+  let suppressNextClick = false;
+  let watchedWindow = null;
+  let autoControlInstances = [];
+
+  const PAD = 6;
+  const BORDER = 1;
+  const CONTROLS_H = 42;
 
   if (!('documentPictureInPicture' in window)) {
     pipBtn.title = 'Picture-in-picture is not supported in this browser (try Chrome or Edge).';
@@ -279,15 +333,14 @@
     return pipWindow || window;
   }
 
-  const PAD = 6;
-  const BORDER = 1;
-
   function pipContentSize(gridW, gridH, cellSize) {
     return {
       w: gridW * cellSize + (PAD + BORDER) * 2,
-      h: gridH * cellSize + (PAD + BORDER) * 2
+      h: gridH * cellSize + (PAD + BORDER) * 2 + CONTROLS_H
     };
   }
+
+  // ---------- clipboard ----------
 
   async function tryClipboardWrite(win, text) {
     try {
@@ -340,45 +393,83 @@
     t._timer = setTimeout(() => t.classList.remove('show'), 1200);
   }
 
-  function onBlurHandler() {
-    if (autoModeEnabled) awaitingReturn = true;
+  function rgbToHex(r, g, b) {
+    return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
   }
 
-  function onFocusHandler() {
-    if (autoModeEnabled && awaitingReturn) {
-      awaitingReturn = false;
-      advanceAuto();
-    }
+  // ---------- auto mode controls (mirrored in main page + PiP popup) ----------
+
+  function syncAutoControls() {
+    autoControlInstances = autoControlInstances.filter(inst => inst.checkbox.isConnected);
+    autoControlInstances.forEach(({ checkbox, select }) => {
+      checkbox.checked = autoModeEnabled;
+      select.value = autoDirection;
+    });
   }
 
-  function attachWatcher(win) {
-    detachWatcher(watchedWindow);
-    watchedWindow = win;
-    win.addEventListener('blur', onBlurHandler);
-    win.addEventListener('focus', onFocusHandler);
+  function createAutoControls(doc, extraClass) {
+    const wrap = doc.createElement('div');
+    wrap.className = 'auto-controls' + (extraClass ? ' ' + extraClass : '');
+    // don't let clicks on the controls themselves bubble into the
+    // "click anywhere to advance" popup handler
+    wrap.addEventListener('click', e => e.stopPropagation());
+
+    const cbLabel = doc.createElement('label');
+    cbLabel.className = 'auto-toggle';
+    const checkbox = doc.createElement('input');
+    checkbox.type = 'checkbox';
+    cbLabel.appendChild(checkbox);
+    cbLabel.appendChild(doc.createTextNode(' Auto'));
+
+    const select = doc.createElement('select');
+    const optTop = doc.createElement('option');
+    optTop.value = 'top';
+    optTop.textContent = 'From top';
+    const optBottom = doc.createElement('option');
+    optBottom.value = 'bottom';
+    optBottom.textContent = 'From bottom';
+    select.appendChild(optTop);
+    select.appendChild(optBottom);
+
+    checkbox.checked = autoModeEnabled;
+    select.value = autoDirection;
+
+    checkbox.addEventListener('change', () => {
+      if (checkbox.checked) {
+        startAuto(select.value);
+      } else {
+        stopAuto();
+      }
+    });
+
+    select.addEventListener('change', () => {
+      autoDirection = select.value;
+      if (autoModeEnabled) {
+        startAuto(autoDirection);
+      } else {
+        syncAutoControls();
+      }
+    });
+
+    wrap.appendChild(cbLabel);
+    wrap.appendChild(select);
+
+    autoControlInstances.push({ checkbox, select });
+    return wrap;
   }
 
-  function detachWatcher(win) {
-    if (!win) return;
-    win.removeEventListener('blur', onBlurHandler);
-    win.removeEventListener('focus', onFocusHandler);
-    if (win === watchedWindow) watchedWindow = null;
+  // ---------- auto mode engine ----------
+
+  function buildSequence() {
+    sequence = autoDirection === 'bottom' ? orderedCells.slice().reverse() : orderedCells.slice();
   }
 
-  function setCurrentCell(index) {
+  function activateCell(cell) {
     orderedCells.forEach(c => c.classList.remove('current'));
-    if (index >= 0) orderedCells[index].classList.add('current');
-  }
+    // mark used immediately on copy — no need to advance first to see the checkmark
+    cell.classList.add('used');
+    cell.classList.add('current');
 
-  function updateProgressInfo() {
-    if (autoModeEnabled && autoCurrentIndex !== -1) {
-      const usedCount = orderedCells.filter(c => c.classList.contains('used')).length;
-      infoText.textContent = `Square ${usedCount + 1} of ${orderedCells.length} — paste, then tab back`;
-    }
-  }
-
-  function copyCurrentAndNotify() {
-    const cell = orderedCells[autoCurrentIndex];
     const hex = cell.dataset.hex;
     const win = cell.ownerDocument.defaultView;
     copyToClipboard(hex, win).then(ok => {
@@ -387,29 +478,107 @@
     updateProgressInfo();
   }
 
+  function updateProgressInfo() {
+    if (!autoModeEnabled) return;
+    const usedCount = orderedCells.filter(c => c.classList.contains('used')).length;
+    infoText.textContent = `Square ${usedCount} of ${orderedCells.length} — paste, then tab back (or click the popup)`;
+  }
+
   function advanceAuto() {
-    if (autoCurrentIndex === -1) return;
-    orderedCells[autoCurrentIndex].classList.remove('current');
-    orderedCells[autoCurrentIndex].classList.add('used');
+    if (!autoModeEnabled) return;
+    let next = autoPointer + 1;
+    while (next < sequence.length && sequence[next].classList.contains('used')) next++;
 
-    let next = autoCurrentIndex + 1;
-    while (next < orderedCells.length && orderedCells[next].classList.contains('used')) next++;
-
-    if (next >= orderedCells.length) {
-      autoCurrentIndex = -1;
-      autoModeEnabled = false;
-      autoModeCheckbox.checked = false;
-      detachWatcher(watchedWindow);
-      const win = getActiveWindow();
-      showToastIn(win, 'All done!');
-      infoText.textContent = 'All squares placed';
+    if (next >= sequence.length) {
+      stopAuto('All done!');
       return;
     }
 
-    autoCurrentIndex = next;
-    setCurrentCell(next);
-    copyCurrentAndNotify();
+    autoPointer = next;
+    activateCell(sequence[autoPointer]);
   }
+
+  function startAuto(direction) {
+    if (orderedCells.length === 0) {
+      autoModeEnabled = false;
+      syncAutoControls();
+      return;
+    }
+    autoDirection = direction;
+    buildSequence();
+    autoPointer = sequence.findIndex(c => !c.classList.contains('used'));
+
+    if (autoPointer === -1) {
+      showToastIn(getActiveWindow(), 'All squares already used');
+      autoModeEnabled = false;
+      syncAutoControls();
+      return;
+    }
+
+    autoModeEnabled = true;
+    activateCell(sequence[autoPointer]);
+    attachWatcher(getActiveWindow());
+    syncAutoControls();
+  }
+
+  function stopAuto(msg) {
+    const wasEnabled = autoModeEnabled;
+    autoModeEnabled = false;
+    autoPointer = -1;
+    awaitingReturn = false;
+    orderedCells.forEach(c => c.classList.remove('current'));
+    detachWatcher(watchedWindow);
+    syncAutoControls();
+    if (msg) showToastIn(getActiveWindow(), msg);
+    if (wasEnabled) {
+      infoText.textContent = orderedCells.length
+        ? `${gridDims.w} × ${gridDims.h} = ${orderedCells.length} blocks`
+        : '';
+    }
+  }
+
+  // ---------- focus-return + click-anywhere-in-popup detection ----------
+
+  function onBlurHandler() {
+    if (autoModeEnabled) awaitingReturn = true;
+  }
+
+  function onFocusHandler() {
+    if (autoModeEnabled && awaitingReturn) {
+      awaitingReturn = false;
+      suppressNextClick = true;
+      advanceAuto();
+      setTimeout(() => { suppressNextClick = false; }, 350);
+    }
+  }
+
+  function onDocClickHandler() {
+    if (!autoModeEnabled) return;
+    if (suppressNextClick) return;
+    advanceAuto();
+  }
+
+  function attachWatcher(win) {
+    detachWatcher(watchedWindow);
+    watchedWindow = win;
+    win.addEventListener('blur', onBlurHandler);
+    win.addEventListener('focus', onFocusHandler);
+    // "click anywhere to advance" only applies inside the popup — the main
+    // page has lots of unrelated controls that shouldn't trigger it
+    if (win === pipWindow) {
+      win.document.addEventListener('click', onDocClickHandler);
+    }
+  }
+
+  function detachWatcher(win) {
+    if (!win) return;
+    win.removeEventListener('blur', onBlurHandler);
+    win.removeEventListener('focus', onFocusHandler);
+    win.document.removeEventListener('click', onDocClickHandler);
+    if (win === watchedWindow) watchedWindow = null;
+  }
+
+  // ---------- grid mounting ----------
 
   function resizePipTo(gridW, gridH, cellSize) {
     if (!pipWindow) return;
@@ -420,7 +589,7 @@
   // always mounts the grid into whichever container is actually on screen —
   // the PiP window if it's open, otherwise the main page. This matters because
   // regenerating while popped out must replace the PiP content, not the
-  // (invisible) main page, or clicks end up targeting the wrong cells.
+  // (invisible) main page, or clicks end up targeting stale cells.
   function mountGrid(gridWrap, gridW, gridH, cellSize) {
     currentGridWrap = gridWrap;
     gridWrap.dataset.gridW = gridW;
@@ -428,8 +597,14 @@
     gridWrap.dataset.cellSize = cellSize;
 
     if (pipWindow) {
-      pipWindow.document.body.innerHTML = '';
-      pipWindow.document.body.appendChild(gridWrap);
+      let area = pipWindow.document.querySelector('.pip-grid-area');
+      if (!area) {
+        area = pipWindow.document.createElement('div');
+        area.className = 'pip-grid-area';
+        pipWindow.document.body.appendChild(area);
+      }
+      area.innerHTML = '';
+      area.appendChild(gridWrap);
       resizePipTo(gridW, gridH, cellSize);
     } else {
       stage.innerHTML = '';
@@ -439,17 +614,27 @@
     pipBtn.disabled = !('documentPictureInPicture' in window);
   }
 
+  // ---------- cell click handling ----------
+
   function handleCellClick(index) {
     const cell = orderedCells[index];
+
+    // inside the popup, any click (cell or background) just advances auto mode —
+    // handled by the document-level click-anywhere listener instead
+    if (pipWindow && cell.ownerDocument === pipWindow.document) {
+      return;
+    }
+
     const hex = cell.dataset.hex;
     const win = cell.ownerDocument.defaultView;
 
     if (autoModeEnabled) {
-      cell.classList.remove('used');
-      autoCurrentIndex = index;
-      awaitingReturn = false;
-      setCurrentCell(index);
-      copyCurrentAndNotify();
+      const idx = sequence.indexOf(cell);
+      if (idx !== -1) {
+        autoPointer = idx;
+        awaitingReturn = false;
+        activateCell(cell);
+      }
     } else {
       copyToClipboard(hex, win).then(ok => {
         showToastIn(win, ok ? ('Copied ' + hex) : 'Copy failed');
@@ -458,34 +643,7 @@
     }
   }
 
-  autoModeCheckbox.addEventListener('change', () => {
-    autoModeEnabled = autoModeCheckbox.checked;
-    if (autoModeEnabled) {
-      if (orderedCells.length === 0) {
-        autoModeEnabled = false;
-        autoModeCheckbox.checked = false;
-        return;
-      }
-      autoCurrentIndex = orderedCells.findIndex(c => !c.classList.contains('used'));
-      if (autoCurrentIndex === -1) {
-        showToastIn(getActiveWindow(), 'All squares already used');
-        autoModeEnabled = false;
-        autoModeCheckbox.checked = false;
-        return;
-      }
-      setCurrentCell(autoCurrentIndex);
-      copyCurrentAndNotify();
-      attachWatcher(getActiveWindow());
-    } else {
-      autoCurrentIndex = -1;
-      awaitingReturn = false;
-      setCurrentCell(-1);
-      detachWatcher(watchedWindow);
-      infoText.textContent = orderedCells.length
-        ? `${gridDims.w} × ${gridDims.h} = ${orderedCells.length} blocks`
-        : '';
-    }
-  });
+  // ---------- image + grid generation ----------
 
   imageInput.addEventListener('change', () => {
     const file = imageInput.files[0];
@@ -518,17 +676,6 @@
     heightInput.value = Math.max(1, Math.round(w * ratio));
   });
 
-  function rgbToHex(r, g, b) {
-    return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
-  }
-
-  function showToast(msg) {
-    toast.textContent = msg;
-    toast.classList.add('show');
-    clearTimeout(showToast._t);
-    showToast._t = setTimeout(() => toast.classList.remove('show'), 1200);
-  }
-
   generateBtn.addEventListener('click', () => {
     if (!loadedImage) return;
 
@@ -537,11 +684,7 @@
     const cellSize = Math.max(4, Math.min(64, parseInt(cellSizeInput.value, 10) || 22));
 
     // reset auto mode / watchers from any previous grid
-    autoModeEnabled = false;
-    autoModeCheckbox.checked = false;
-    autoCurrentIndex = -1;
-    awaitingReturn = false;
-    detachWatcher(watchedWindow);
+    stopAuto();
     orderedCells = [];
     gridDims = { w: gridW, h: gridH };
 
@@ -606,6 +749,8 @@
     infoText.textContent = `${gridW} × ${gridH} = ${gridW * gridH} blocks`;
   });
 
+  // ---------- pop out to PiP ----------
+
   pipBtn.addEventListener('click', async () => {
     if (!currentGridWrap) return;
     if (!('documentPictureInPicture' in window)) {
@@ -632,8 +777,12 @@
     pipWindow.document.body.style.background = '#ffffff';
     pipWindow.document.body.style.overflow = 'hidden';
     pipWindow.document.body.style.display = 'flex';
-    pipWindow.document.body.style.alignItems = 'center';
-    pipWindow.document.body.style.justifyContent = 'center';
+    pipWindow.document.body.style.flexDirection = 'column';
+    pipWindow.document.body.style.height = '100vh';
+
+    // mirrored auto-mode controls, editable right in the popup
+    const bar = createAutoControls(pipWindow.document, 'pip-bar');
+    pipWindow.document.body.appendChild(bar);
 
     // move the live node (not a clone) so click handlers keep working
     mountGrid(currentGridWrap, gridW, gridH, cellSize);
@@ -647,6 +796,10 @@
       if (autoModeEnabled) attachWatcher(window);
     }, { once: true });
   });
+
+  // ---------- init ----------
+
+  autoControlsSlot.appendChild(createAutoControls(document));
 </script>
 
 </body>
