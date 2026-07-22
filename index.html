@@ -157,6 +157,23 @@
     color: #111111;
   }
 
+  .cell.current {
+    outline: 3px solid #111111;
+    outline-offset: -3px;
+    z-index: 2;
+  }
+
+  .center-marker {
+    position: absolute;
+    left: 15%;
+    right: 15%;
+    bottom: 0;
+    height: 3px;
+    background: #111111;
+    pointer-events: none;
+    z-index: 3;
+  }
+
   .placeholder {
     padding: 60px 20px;
     text-align: center;
@@ -210,6 +227,11 @@
   <button id="generateBtn" disabled>Generate</button>
   <button id="pipBtn" disabled>Pop out</button>
 
+  <div class="field">
+    <label for="autoModeCheckbox">Auto mode</label>
+    <input type="checkbox" id="autoModeCheckbox" title="Copies each square in order. Alt-tab back after pasting and the next square copies itself automatically.">
+  </div>
+
   <div class="info" id="infoText"></div>
 </div>
 
@@ -228,6 +250,7 @@
   const cellSizeInput = document.getElementById('cellSizeInput');
   const generateBtn = document.getElementById('generateBtn');
   const pipBtn = document.getElementById('pipBtn');
+  const autoModeCheckbox = document.getElementById('autoModeCheckbox');
   const stage = document.getElementById('stage');
   const infoText = document.getElementById('infoText');
   const toast = document.getElementById('toast');
@@ -238,9 +261,177 @@
   let currentGridWrap = null;
   let pipWindow = null;
 
+  // ordered list of cell elements for the current grid (top-left to bottom-right)
+  let orderedCells = [];
+  let autoModeEnabled = false;
+  let autoCurrentIndex = -1;
+  let awaitingReturn = false;
+  let watchedWindow = null;
+  let gridDims = { w: 0, h: 0 };
+
   if (!('documentPictureInPicture' in window)) {
     pipBtn.title = 'Picture-in-picture is not supported in this browser (try Chrome or Edge).';
   }
+
+  function getActiveWindow() {
+    return pipWindow || window;
+  }
+
+  // copies text using whichever window's document currently has the cell/focus,
+  // since a cell moved into the PiP window is owned by a different document/window
+  async function copyToClipboard(text, win) {
+    try {
+      await win.navigator.clipboard.writeText(text);
+      return true;
+    } catch (err) {
+      try {
+        const ta = win.document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        win.document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        win.document.execCommand('copy');
+        win.document.body.removeChild(ta);
+        return true;
+      } catch (err2) {
+        return false;
+      }
+    }
+  }
+
+  function showToastIn(win, msg) {
+    let t = win.document.querySelector('.toast');
+    if (!t) {
+      t = win.document.createElement('div');
+      t.className = 'toast';
+      win.document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 1200);
+  }
+
+  function onBlurHandler() {
+    if (autoModeEnabled) awaitingReturn = true;
+  }
+
+  function onFocusHandler() {
+    if (autoModeEnabled && awaitingReturn) {
+      awaitingReturn = false;
+      advanceAuto();
+    }
+  }
+
+  function attachWatcher(win) {
+    detachWatcher(watchedWindow);
+    watchedWindow = win;
+    win.addEventListener('blur', onBlurHandler);
+    win.addEventListener('focus', onFocusHandler);
+  }
+
+  function detachWatcher(win) {
+    if (!win) return;
+    win.removeEventListener('blur', onBlurHandler);
+    win.removeEventListener('focus', onFocusHandler);
+    if (win === watchedWindow) watchedWindow = null;
+  }
+
+  function setCurrentCell(index) {
+    orderedCells.forEach(c => c.classList.remove('current'));
+    if (index >= 0) orderedCells[index].classList.add('current');
+  }
+
+  function updateProgressInfo() {
+    if (autoModeEnabled && autoCurrentIndex !== -1) {
+      const usedCount = orderedCells.filter(c => c.classList.contains('used')).length;
+      infoText.textContent = `Square ${usedCount + 1} of ${orderedCells.length} — paste, then tab back`;
+    }
+  }
+
+  function copyCurrentAndNotify() {
+    const cell = orderedCells[autoCurrentIndex];
+    const hex = cell.dataset.hex;
+    const win = cell.ownerDocument.defaultView;
+    copyToClipboard(hex, win).then(ok => {
+      showToastIn(win, ok ? ('Copied ' + hex) : 'Copy failed');
+    });
+    updateProgressInfo();
+  }
+
+  function advanceAuto() {
+    if (autoCurrentIndex === -1) return;
+    orderedCells[autoCurrentIndex].classList.remove('current');
+    orderedCells[autoCurrentIndex].classList.add('used');
+
+    let next = autoCurrentIndex + 1;
+    while (next < orderedCells.length && orderedCells[next].classList.contains('used')) next++;
+
+    if (next >= orderedCells.length) {
+      autoCurrentIndex = -1;
+      autoModeEnabled = false;
+      autoModeCheckbox.checked = false;
+      detachWatcher(watchedWindow);
+      const win = getActiveWindow();
+      showToastIn(win, 'All done!');
+      infoText.textContent = 'All squares placed';
+      return;
+    }
+
+    autoCurrentIndex = next;
+    setCurrentCell(next);
+    copyCurrentAndNotify();
+  }
+
+  function handleCellClick(index) {
+    const cell = orderedCells[index];
+    const hex = cell.dataset.hex;
+    const win = cell.ownerDocument.defaultView;
+
+    if (autoModeEnabled) {
+      cell.classList.remove('used');
+      autoCurrentIndex = index;
+      awaitingReturn = false;
+      setCurrentCell(index);
+      copyCurrentAndNotify();
+    } else {
+      copyToClipboard(hex, win).then(ok => {
+        showToastIn(win, ok ? ('Copied ' + hex) : 'Copy failed');
+      });
+      cell.classList.toggle('used');
+    }
+  }
+
+  autoModeCheckbox.addEventListener('change', () => {
+    autoModeEnabled = autoModeCheckbox.checked;
+    if (autoModeEnabled) {
+      if (orderedCells.length === 0) {
+        autoModeEnabled = false;
+        autoModeCheckbox.checked = false;
+        return;
+      }
+      autoCurrentIndex = orderedCells.findIndex(c => !c.classList.contains('used'));
+      if (autoCurrentIndex === -1) {
+        showToastIn(getActiveWindow(), 'All squares already used');
+        autoModeEnabled = false;
+        autoModeCheckbox.checked = false;
+        return;
+      }
+      setCurrentCell(autoCurrentIndex);
+      copyCurrentAndNotify();
+      attachWatcher(getActiveWindow());
+    } else {
+      autoCurrentIndex = -1;
+      awaitingReturn = false;
+      setCurrentCell(-1);
+      detachWatcher(watchedWindow);
+      infoText.textContent = orderedCells.length
+        ? `${gridDims.w} × ${gridDims.h} = ${orderedCells.length} blocks`
+        : '';
+    }
+  });
 
   imageInput.addEventListener('change', () => {
     const file = imageInput.files[0];
