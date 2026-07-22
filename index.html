@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,16 +13,29 @@
     color: #111111;
   }
 
+  .app-header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid #dddddd;
+  }
+  .app-header h1 {
+    margin: 0 0 4px;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .app-header p {
+    margin: 0;
+    font-size: 13px;
+    color: #666666;
+  }
+
   .toolbar-row {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;
     gap: 14px;
-    padding: 10px 16px;
+    padding: 12px 20px;
+    border-bottom: 1px solid #dddddd;
   }
-
-  .toolbar-row + .toolbar-row { border-top: 1px solid #eeeeee; }
-  .topbar { border-bottom: 1px solid #dddddd; }
 
   .field { display: flex; flex-direction: column; gap: 3px; }
   .field label {
@@ -31,21 +45,21 @@
     color: #666666;
   }
 
-  input[type="file"], input[type="number"], select {
+  input[type="file"], input[type="number"] {
     border: 1px solid #cccccc;
-    padding: 6px 8px;
+    padding: 7px 9px;
     font-size: 13px;
     background: #ffffff;
     color: #111111;
     outline: none;
   }
-  input[type="number"] { width: 80px; }
+  input[type="number"] { width: 84px; }
 
   input[type="file"]::file-selector-button {
     border: 1px solid #111111;
     background: #ffffff;
     color: #111111;
-    padding: 5px 8px;
+    padding: 5px 9px;
     margin-right: 8px;
     cursor: pointer;
   }
@@ -55,7 +69,7 @@
     border: 1px solid #111111;
     background: #111111;
     color: #ffffff;
-    padding: 8px 14px;
+    padding: 8px 16px;
     font-size: 13px;
     cursor: pointer;
     height: fit-content;
@@ -81,6 +95,12 @@
     border: 1px solid #dddddd;
     padding: 6px;
     background: #ffffff;
+  }
+
+  .calibration-row { display: grid; line-height: 0; }
+  .calibration-cell { cursor: pointer; }
+  .center-mark-cell {
+    box-shadow: inset 0 0 0 2px #ffffff, inset 0 0 0 4px #111111;
   }
 
   .grid { display: grid; line-height: 0; }
@@ -118,38 +138,11 @@
   .cell.current { outline: 3px solid #111111; outline-offset: -3px; z-index: 3; }
 
   .cell.next-preview {
-    outline: 2px solid #ffffff;
-    outline-offset: -4px;
-    box-shadow: inset 0 0 0 2px #000000;
+    outline: 1px solid #ffffff;
+    outline-offset: -3px;
+    box-shadow: inset 0 0 0 1px #000000;
     z-index: 3;
   }
-
-  /* row/column focus highlighting used inside the popup */
-  .cell.line-adjacent { filter: brightness(0.5); }
-  .cell.used.line-adjacent { filter: grayscale(1) brightness(0.55); }
-  .cell.line-far { filter: brightness(0.1); }
-  .cell.used.line-far { filter: grayscale(1) brightness(0.08); }
-
-  .center-guide {
-    position: absolute;
-    background: #d32020;
-    pointer-events: none;
-    z-index: 6;
-  }
-  .center-guide.vertical { width: 2px; height: 7px; margin-left: -1px; }
-  .center-guide.horizontal { height: 2px; width: 7px; margin-top: -1px; }
-
-  .calibration-strip {
-    position: absolute;
-    top: 0;
-    right: 6px;
-    transform: translateY(-100%);
-    display: flex;
-    gap: 2px;
-    border: 1px solid #111111;
-    z-index: 5;
-  }
-  .calibration-square { cursor: pointer; }
 
   .placeholder { padding: 60px 20px; text-align: center; color: #999999; font-size: 14px; }
 
@@ -183,24 +176,39 @@
   .resume-dismiss { background: #ffffff; color: #111111; border: 1px solid #cccccc; }
   .resume-dismiss:hover { background: #f2f2f2; }
 
-  /* --- compact auto-mode banner --- */
+  /* --- pip idle bar (popup, auto mode not running yet) --- */
+
+  .pip-idle-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 12px;
+    border-bottom: 1px solid #dddddd;
+    flex-shrink: 0;
+    font-size: 12px;
+  }
+  .pip-idle-bar button { padding: 6px 12px; font-size: 12px; }
+
+  /* --- running auto-mode banner (~100px), used in popup + main page --- */
 
   .auto-panel {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
+    gap: 14px;
     background: #ffffff;
-    font-size: 12px;
-    padding: 6px 10px;
+    padding: 8px 14px;
     border-bottom: 2px solid #111111;
     flex-shrink: 0;
+    height: 100px;
   }
   .auto-panel.floating {
     position: fixed;
     top: 12px;
     right: 12px;
-    max-width: 380px;
+    width: 420px;
+    height: auto;
+    min-height: 84px;
     border: 2px solid #111111;
     z-index: 1000;
   }
@@ -209,47 +217,49 @@
     border: 1px solid #111111;
     background: #ffffff;
     color: #111111;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     padding: 0;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1;
     cursor: pointer;
     flex-shrink: 0;
+    align-self: flex-start;
   }
   .auto-exit-btn:hover { background: #111111; color: #ffffff; }
 
-  .auto-progress { font-size: 11px; color: #444444; white-space: nowrap; }
-
-  .auto-mini {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .auto-mini-label { font-size: 9px; text-transform: uppercase; color: #999999; }
-  .auto-mini-swatch { width: 16px; height: 16px; border: 1px solid #999999; flex-shrink: 0; }
-  .auto-mini-swatch.big { width: 20px; height: 20px; border: 2px solid #111111; }
+  .auto-swatch-block { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .auto-swatch-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; color: #999999; }
+  .auto-swatch { border: 1px solid #cccccc; }
+  .auto-swatch.current { width: 56px; height: 56px; border: 2px solid #111111; }
+  .auto-swatch.previous { width: 36px; height: 36px; }
   .auto-hex { font-family: monospace; font-size: 11px; }
+
+  .auto-status-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12px;
+    min-width: 90px;
+  }
+  .auto-progress { font-weight: 600; }
+  .auto-ago { color: #666666; font-size: 11px; }
 
   .auto-nav-btn {
     border: 1px solid #111111;
     background: #ffffff;
     color: #111111;
-    padding: 4px 8px;
-    font-size: 11px;
+    padding: 8px 12px;
+    font-size: 12px;
     cursor: pointer;
   }
   .auto-nav-btn:hover:not(:disabled) { background: #111111; color: #ffffff; }
   .auto-nav-btn:disabled { color: #cccccc; border-color: #cccccc; cursor: not-allowed; }
 
-  .auto-panel select {
-    padding: 4px 5px;
-    font-size: 11px;
-  }
-
   .auto-sound-toggle {
     font-size: 11px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 3px;
     cursor: pointer;
@@ -260,68 +270,65 @@
     border: 1px solid #111111;
     background: #111111;
     color: #ffffff;
-    padding: 5px 10px;
-    font-size: 11px;
+    padding: 8px 12px;
+    font-size: 12px;
     cursor: pointer;
     margin-left: auto;
   }
   .auto-save-btn:hover { background: #333333; }
 
-  .pip-grid-area {
+  .pip-click-area {
     flex: 1;
     min-height: 0;
-    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
+    overflow: hidden;
     cursor: pointer;
+  }
+  .click-area-label {
+    position: absolute;
+    top: 8px;
+    left: 12px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #aaaaaa;
+    pointer-events: none;
   }
 </style>
 </head>
 <body>
 
+<div class="app-header">
+  <h1>Pixel Grid Color Picker</h1>
+  <p>Turn an image into a block-by-block color grid — built for Minecraft-style builds.</p>
+</div>
+
 <div id="resumeBannerSlot"></div>
 
-<div class="topbar">
-  <div class="toolbar-row">
-    <div class="field">
-      <label for="imageInput">Image</label>
-      <input type="file" id="imageInput" accept="image/*">
-    </div>
-    <div class="field">
-      <label for="widthInput">Width (blocks)</label>
-      <input type="number" id="widthInput" value="32" min="1" max="256">
-    </div>
-    <div class="field">
-      <label for="heightInput">Height (blocks)</label>
-      <input type="number" id="heightInput" value="32" min="1" max="256">
-    </div>
-    <div class="field">
-      <label for="cellSizeInput">Preview size (px)</label>
-      <input type="number" id="cellSizeInput" value="22" min="4" max="64">
-    </div>
-    <button id="generateBtn" disabled>Generate</button>
-    <button id="pipBtn" disabled>Pop out</button>
-    <div class="info" id="infoText"></div>
+<div class="toolbar-row">
+  <div class="field">
+    <label for="imageInput">Image</label>
+    <input type="file" id="imageInput" accept="image/*">
   </div>
-
-  <div class="toolbar-row">
-    <div class="field">
-      <label for="cornerSelect">Start corner</label>
-      <select id="cornerSelect">
-        <option value="tl">Top-left</option>
-        <option value="tr">Top-right</option>
-        <option value="bl">Bottom-left</option>
-        <option value="br">Bottom-right</option>
-      </select>
-    </div>
-    <div class="field">
-      <label for="directionSelect">Direction</label>
-      <select id="directionSelect">
-        <option value="horizontal">Row by row</option>
-        <option value="vertical">Column by column</option>
-      </select>
-    </div>
-    <button id="startAutoBtn" class="accent-btn" disabled>Start Auto Mode</button>
+  <div class="field">
+    <label for="widthInput">Width (blocks)</label>
+    <input type="number" id="widthInput" value="32" min="1" max="256">
   </div>
+  <div class="field">
+    <label for="heightInput">Height (blocks)</label>
+    <input type="number" id="heightInput" value="32" min="1" max="256">
+  </div>
+  <div class="field">
+    <label for="cellSizeInput">Preview size (px)</label>
+    <input type="number" id="cellSizeInput" value="22" min="4" max="64">
+  </div>
+  <button id="generateBtn" disabled>Generate</button>
+  <button id="pipBtn" disabled>Pop out</button>
+  <button id="startAutoBtn" class="accent-btn" disabled>Start Auto Mode</button>
+  <div class="info" id="infoText"></div>
 </div>
 
 <div class="stage" id="stage">
@@ -339,8 +346,6 @@
   const cellSizeInput = document.getElementById('cellSizeInput');
   const generateBtn = document.getElementById('generateBtn');
   const pipBtn = document.getElementById('pipBtn');
-  const cornerSelect = document.getElementById('cornerSelect');
-  const directionSelect = document.getElementById('directionSelect');
   const startAutoBtn = document.getElementById('startAutoBtn');
   const stage = document.getElementById('stage');
   const infoText = document.getElementById('infoText');
@@ -351,30 +356,32 @@
   const PAD = 6;
   const BORDER = 1;
   const SESSION_KEY = 'pixelGridSession';
-  const PIP_DEFAULT_W = 480;
-  const PIP_DEFAULT_H = 380;
+  const PIP_DEFAULT_W = 560;
+  const PIP_DEFAULT_H = 480;
+  const RGB_COLORS = ['#ff0000', '#00ff00', '#0000ff'];
 
   let loadedImage = null;
   let loadedImageDataURL = null;
   let currentGridWrap = null;
   let pipWindow = null;
+  let pipIdleBarEl = null;
   let gridDims = { w: 0, h: 0 };
 
+  // all cells, row-major, top-left to bottom-right — the only order this tool uses
   let orderedCells = [];
-  let sequence = [];
 
   let autoModeEnabled = false;
-  let startCorner = 'tl';
-  let sweepDirection = 'horizontal';
   let autoPointer = -1;
   let currentHex = null;
   let previousHex = null;
-  let lastLineCoord = null;
+  let lastRow = null;
+  let lastCopiedAt = null;
   let soundEnabled = true;
   let awaitingReturn = false;
   let watchedWindow = null;
   let autoPanelInstances = [];
-  let focusCellSize = 22;
+  let liveTimerId = null;
+  let displayCellSize = 22;
 
   if (!('documentPictureInPicture' in window)) {
     pipBtn.title = 'Picture-in-picture is not supported in this browser (try Chrome or Edge).';
@@ -386,13 +393,10 @@
     return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
   }
 
-  function dominantColor(hex) {
-    const r = parseInt(hex.substr(1, 2), 16);
-    const g = parseInt(hex.substr(3, 2), 16);
-    const b = parseInt(hex.substr(5, 2), 16);
-    if (r >= g && r >= b) return '#ff0000';
-    if (g >= r && g >= b) return '#00ff00';
-    return '#0000ff';
+  // red starts at the rightmost column, then green, then blue, repeating leftward
+  function cycleColorFor(x, gridW) {
+    const distFromRight = gridW - 1 - x;
+    return RGB_COLORS[distFromRight % 3];
   }
 
   // ---------- clipboard ----------
@@ -454,46 +458,23 @@
     } catch (err) { /* ignore */ }
   }
 
-  // ---------- auto mode engine ----------
-
-  function buildSequenceFromOrder(corner, direction) {
-    const gw = gridDims.w, gh = gridDims.h;
-    const xs = []; for (let x = 0; x < gw; x++) xs.push(x);
-    const ys = []; for (let y = 0; y < gh; y++) ys.push(y);
-    const startLeft = corner === 'tl' || corner === 'bl';
-    const startTop = corner === 'tl' || corner === 'tr';
-    const orderedXs = startLeft ? xs : xs.slice().reverse();
-    const orderedYs = startTop ? ys : ys.slice().reverse();
-    const seq = [];
-    if (direction === 'vertical') {
-      for (const x of orderedXs) for (const y of orderedYs) seq.push(orderedCells[y * gw + x]);
-    } else {
-      for (const y of orderedYs) for (const x of orderedXs) seq.push(orderedCells[y * gw + x]);
-    }
-    return seq;
+  function formatAgo(ms) {
+    const s = Math.floor(ms / 1000);
+    if (s < 1) return 'just now';
+    if (s < 60) return s + 's ago';
+    const m = Math.floor(s / 60);
+    return m + 'm ' + (s % 60) + 's ago';
   }
 
-  function applyOrder(corner, direction, keepProgress) {
-    startCorner = corner;
-    sweepDirection = direction;
-    sequence = buildSequenceFromOrder(corner, direction);
-    if (keepProgress) {
-      const idx = sequence.findIndex(c => !c.classList.contains('used'));
-      autoPointer = idx === -1 ? sequence.length - 1 : idx;
-    } else {
-      autoPointer = 0;
-    }
-  }
+  // ---------- auto mode engine (always row by row, top-left to bottom-right) ----------
 
-  function lineCoordOf(cell) {
-    return sweepDirection === 'vertical' ? parseInt(cell.dataset.gx, 10) : parseInt(cell.dataset.gy, 10);
-  }
+  function rowOf(cell) { return parseInt(cell.dataset.gy, 10); }
 
-  function remainingInLine(pointerIdx) {
-    const coord = lineCoordOf(sequence[pointerIdx]);
+  function remainingInRow(pointerIdx) {
+    const row = rowOf(orderedCells[pointerIdx]);
     let remaining = 0;
-    for (let i = pointerIdx + 1; i < sequence.length; i++) {
-      if (lineCoordOf(sequence[i]) !== coord) break;
+    for (let i = pointerIdx + 1; i < orderedCells.length; i++) {
+      if (rowOf(orderedCells[i]) !== row) break;
       remaining++;
     }
     return remaining;
@@ -505,60 +486,61 @@
     cell.classList.add('used');
     cell.classList.add('current');
     currentHex = cell.dataset.hex;
+    lastCopiedAt = Date.now();
 
-    if (autoPointer + 1 < sequence.length) sequence[autoPointer + 1].classList.add('next-preview');
+    if (autoPointer + 1 < orderedCells.length) {
+      orderedCells[autoPointer + 1].classList.add('next-preview');
+    }
 
     const win = cell.ownerDocument.defaultView;
     copyToClipboard(currentHex, win).then(ok => {
       showToastIn(win, ok ? ('Copied ' + currentHex) : 'Copy failed');
     });
 
-    const coord = lineCoordOf(cell);
-    const noun = sweepDirection === 'vertical' ? 'column' : 'row';
-    if (lastLineCoord !== null && coord !== lastLineCoord) {
-      speak('New ' + noun);
+    const row = rowOf(cell);
+    if (lastRow !== null && row !== lastRow) {
+      speak('New row');
     } else {
-      const remaining = remainingInLine(autoPointer);
-      if (remaining > 0 && remaining <= 2) {
-        speak(remaining + ' left in ' + noun);
-      } else {
-        speak('Copied');
-      }
+      const remaining = remainingInRow(autoPointer);
+      if (remaining > 0 && remaining <= 2) speak(remaining + ' left in row');
+      else speak('Copied');
     }
-    lastLineCoord = coord;
+    lastRow = row;
 
-    updateLineFocus();
     updateAutoPanels();
   }
 
   function goNext() {
     if (!autoModeEnabled) return;
-    if (autoPointer >= sequence.length - 1) {
+    if (autoPointer >= orderedCells.length - 1) {
       showToastIn(getActiveWindow(), 'All done!');
       return;
     }
     autoPointer += 1;
-    activateCell(sequence[autoPointer]);
+    activateCell(orderedCells[autoPointer]);
   }
 
   function goBack() {
     if (!autoModeEnabled) return;
     if (autoPointer <= 0) return;
     autoPointer -= 1;
-    activateCell(sequence[autoPointer]);
+    activateCell(orderedCells[autoPointer]);
   }
 
-  function startAuto(corner, direction) {
+  function startAuto() {
     if (orderedCells.length === 0) return;
+    removePipIdleBar();
     const keepProgress = orderedCells.some(c => c.classList.contains('used'));
-    applyOrder(corner, direction, keepProgress);
+    autoPointer = keepProgress ? orderedCells.findIndex(c => !c.classList.contains('used')) : 0;
+    if (autoPointer === -1) autoPointer = orderedCells.length - 1;
     autoModeEnabled = true;
     currentHex = null;
     previousHex = null;
-    lastLineCoord = null;
-    activateCell(sequence[autoPointer]);
+    lastRow = null;
+    activateCell(orderedCells[autoPointer]);
     ensureAutoPanel();
     attachWatcher(getActiveWindow());
+    startLiveTimer();
   }
 
   function stopAuto() {
@@ -566,12 +548,13 @@
     autoPointer = -1;
     currentHex = null;
     previousHex = null;
-    lastLineCoord = null;
+    lastRow = null;
     awaitingReturn = false;
     orderedCells.forEach(c => c.classList.remove('current', 'next-preview'));
     detachWatcher(watchedWindow);
     removeAutoPanels();
-    clearLineFocus();
+    stopLiveTimer();
+    if (pipWindow) ensurePipIdleBar();
   }
 
   function saveSession() {
@@ -581,7 +564,6 @@
     const data = {
       imageDataURL: loadedImageDataURL,
       gridW: gridDims.w, gridH: gridDims.h, cellSize,
-      corner: startCorner, direction: sweepDirection,
       usedFlags, savedAt: Date.now()
     };
     try {
@@ -592,36 +574,16 @@
     }
   }
 
-  // ---------- row/column focus highlighting (popup only) ----------
-
-  function updateLineFocus() {
-    if (!pipWindow) return;
-    const lineIdx = sequence[autoPointer] ? lineCoordOf(sequence[autoPointer]) : 0;
-    orderedCells.forEach(c => {
-      const coord = lineCoordOf(c);
-      const diff = coord - lineIdx;
-      c.classList.remove('line-adjacent', 'line-far');
-      if (diff !== 0) {
-        c.classList.add(Math.abs(diff) === 1 ? 'line-adjacent' : 'line-far');
-      }
-    });
-    scrollToLine(lineIdx);
+  function startLiveTimer() {
+    stopLiveTimer();
+    liveTimerId = setInterval(() => {
+      autoPanelInstances.forEach(p => {
+        if (p.agoEl && lastCopiedAt) p.agoEl.textContent = formatAgo(Date.now() - lastCopiedAt);
+      });
+    }, 500);
   }
-
-  function clearLineFocus() {
-    orderedCells.forEach(c => c.classList.remove('line-adjacent', 'line-far'));
-  }
-
-  function scrollToLine(lineIdx) {
-    if (!pipWindow) return;
-    const area = pipWindow.document.querySelector('.pip-grid-area');
-    if (!area) return;
-    const target = Math.max(0, (lineIdx - 1) * focusCellSize);
-    if (sweepDirection === 'vertical') {
-      area.scrollTo({ left: target, behavior: 'smooth' });
-    } else {
-      area.scrollTo({ top: target, behavior: 'smooth' });
-    }
+  function stopLiveTimer() {
+    if (liveTimerId) { clearInterval(liveTimerId); liveTimerId = null; }
   }
 
   // ---------- focus-return + keyboard shortcuts ----------
@@ -656,7 +618,7 @@
     if (win === watchedWindow) watchedWindow = null;
   }
 
-  // ---------- compact auto-mode banner ----------
+  // ---------- running auto-mode banner (~100px), mirrored in popup + main page ----------
 
   function createAutoPanel(doc, isPip) {
     const root = doc.createElement('div');
@@ -668,66 +630,63 @@
     exitBtn.textContent = '✕';
     exitBtn.title = 'Exit auto mode';
 
+    const curBlock = doc.createElement('div');
+    curBlock.className = 'auto-swatch-block';
+    const curLabel = doc.createElement('div');
+    curLabel.className = 'auto-swatch-label';
+    curLabel.textContent = 'Current';
+    const currentSwatch = doc.createElement('div');
+    currentSwatch.className = 'auto-swatch current';
+    const currentHexEl = doc.createElement('div');
+    currentHexEl.className = 'auto-hex';
+    curBlock.appendChild(curLabel);
+    curBlock.appendChild(currentSwatch);
+    curBlock.appendChild(currentHexEl);
+
+    const prevBlock = doc.createElement('div');
+    prevBlock.className = 'auto-swatch-block';
+    const prevLabel = doc.createElement('div');
+    prevLabel.className = 'auto-swatch-label';
+    prevLabel.textContent = 'Previous';
+    const prevSwatch = doc.createElement('div');
+    prevSwatch.className = 'auto-swatch previous';
+    const prevHexEl = doc.createElement('div');
+    prevHexEl.className = 'auto-hex';
+    prevBlock.appendChild(prevLabel);
+    prevBlock.appendChild(prevSwatch);
+    prevBlock.appendChild(prevHexEl);
+
+    const statusBlock = doc.createElement('div');
+    statusBlock.className = 'auto-status-block';
     const progressEl = doc.createElement('div');
     progressEl.className = 'auto-progress';
-
-    const curWrap = doc.createElement('div');
-    curWrap.className = 'auto-mini';
-    const currentSwatch = doc.createElement('div');
-    currentSwatch.className = 'auto-mini-swatch big';
-    const currentHexEl = doc.createElement('span');
-    currentHexEl.className = 'auto-hex';
-    curWrap.appendChild(currentSwatch);
-    curWrap.appendChild(currentHexEl);
-
-    const prevWrap = doc.createElement('div');
-    prevWrap.className = 'auto-mini';
-    const prevLabel = doc.createElement('span');
-    prevLabel.className = 'auto-mini-label';
-    prevLabel.textContent = 'prev';
-    const prevSwatch = doc.createElement('div');
-    prevSwatch.className = 'auto-mini-swatch';
-    const prevHexEl = doc.createElement('span');
-    prevHexEl.className = 'auto-hex';
-    prevWrap.appendChild(prevLabel);
-    prevWrap.appendChild(prevSwatch);
-    prevWrap.appendChild(prevHexEl);
+    const agoEl = doc.createElement('div');
+    agoEl.className = 'auto-ago';
+    statusBlock.appendChild(progressEl);
+    statusBlock.appendChild(agoEl);
 
     const backBtn = doc.createElement('button');
     backBtn.className = 'auto-nav-btn';
-    backBtn.textContent = '← Back';
-    const nextBtn = doc.createElement('button');
-    nextBtn.className = 'auto-nav-btn';
-    nextBtn.textContent = 'Next →';
-
-    const pCorner = doc.createElement('select');
-    [['tl', 'Top-left'], ['tr', 'Top-right'], ['bl', 'Bottom-left'], ['br', 'Bottom-right']].forEach(([v, l]) => {
-      const o = doc.createElement('option'); o.value = v; o.textContent = l; pCorner.appendChild(o);
-    });
-    const pDirection = doc.createElement('select');
-    [['horizontal', 'Rows'], ['vertical', 'Columns']].forEach(([v, l]) => {
-      const o = doc.createElement('option'); o.value = v; o.textContent = l; pDirection.appendChild(o);
-    });
+    backBtn.textContent = '↩ Undo';
 
     const soundLabel = doc.createElement('label');
     soundLabel.className = 'auto-sound-toggle';
     const soundToggle = doc.createElement('input');
     soundToggle.type = 'checkbox';
+    const soundText = doc.createElement('span');
+    soundText.textContent = 'Sound';
     soundLabel.appendChild(soundToggle);
-    soundLabel.appendChild(doc.createTextNode(' Sound'));
+    soundLabel.appendChild(soundText);
 
     const saveBtn = doc.createElement('button');
     saveBtn.className = 'auto-save-btn';
     saveBtn.textContent = 'Save & Exit';
 
     root.appendChild(exitBtn);
-    root.appendChild(progressEl);
-    root.appendChild(curWrap);
-    root.appendChild(prevWrap);
+    root.appendChild(curBlock);
+    root.appendChild(prevBlock);
+    root.appendChild(statusBlock);
     root.appendChild(backBtn);
-    root.appendChild(nextBtn);
-    root.appendChild(pCorner);
-    root.appendChild(pDirection);
     root.appendChild(soundLabel);
     root.appendChild(saveBtn);
 
@@ -737,7 +696,6 @@
       if (wasPip) pipWindow.close();
     });
     backBtn.addEventListener('click', goBack);
-    nextBtn.addEventListener('click', goNext);
     saveBtn.addEventListener('click', () => {
       saveSession();
       const wasPip = pipWindow && doc === pipWindow.document;
@@ -748,19 +706,8 @@
       soundEnabled = soundToggle.checked;
       updateAutoPanels();
     });
-    pCorner.addEventListener('change', () => {
-      applyOrder(pCorner.value, sweepDirection, true);
-      activateCell(sequence[autoPointer]);
-    });
-    pDirection.addEventListener('change', () => {
-      applyOrder(startCorner, pDirection.value, true);
-      activateCell(sequence[autoPointer]);
-    });
 
-    return {
-      doc, root, progressEl, currentSwatch, currentHexEl, prevSwatch, prevHexEl,
-      cornerSelect: pCorner, directionSelect: pDirection, backBtn, nextBtn, soundToggle
-    };
+    return { doc, root, progressEl, agoEl, currentSwatch, currentHexEl, prevSwatch, prevHexEl, backBtn, soundToggle };
   }
 
   function ensureAutoPanel() {
@@ -787,90 +734,83 @@
   function updateAutoPanels() {
     autoPanelInstances = autoPanelInstances.filter(p => p.root.isConnected);
     autoPanelInstances.forEach(p => {
-      p.progressEl.textContent = sequence.length ? `${autoPointer + 1} / ${sequence.length}` : '';
+      p.progressEl.textContent = orderedCells.length ? `${autoPointer + 1} / ${orderedCells.length}` : '';
+      p.agoEl.textContent = lastCopiedAt ? formatAgo(Date.now() - lastCopiedAt) : '';
       p.currentSwatch.style.background = currentHex || '#ffffff';
       p.currentHexEl.textContent = currentHex || '—';
       p.prevSwatch.style.background = previousHex || '#ffffff';
       p.prevHexEl.textContent = previousHex || '—';
       p.backBtn.disabled = autoPointer <= 0;
-      p.nextBtn.disabled = autoPointer >= sequence.length - 1;
-      p.cornerSelect.value = startCorner;
-      p.directionSelect.value = sweepDirection;
       p.soundToggle.checked = soundEnabled;
     });
   }
 
+  // ---------- pip idle bar (popup open, auto mode not running) ----------
+
+  function ensurePipIdleBar() {
+    if (!pipWindow) return;
+    removePipIdleBar();
+    const bar = pipWindow.document.createElement('div');
+    bar.className = 'pip-idle-bar';
+    bar.addEventListener('click', e => e.stopPropagation());
+
+    const info = pipWindow.document.createElement('span');
+    info.textContent = `${gridDims.w} × ${gridDims.h} — ${orderedCells.length} squares`;
+
+    const startBtn = pipWindow.document.createElement('button');
+    startBtn.className = 'accent-btn';
+    startBtn.textContent = 'Start Auto Mode';
+    startBtn.addEventListener('click', () => startAuto());
+
+    bar.appendChild(info);
+    bar.appendChild(startBtn);
+    pipWindow.document.body.insertBefore(bar, pipWindow.document.body.firstChild);
+    pipIdleBarEl = bar;
+  }
+
+  function removePipIdleBar() {
+    if (pipIdleBarEl) { pipIdleBarEl.remove(); pipIdleBarEl = null; }
+  }
+
   // ---------- grid mounting + PiP ----------
-
-  function repositionCenterGuides(gridWrap, gridW, gridH, cellSize) {
-    gridWrap.querySelectorAll('.center-guide').forEach(el => el.remove());
-    const centerXs = gridWrap._centerXs || [];
-    const centerYs = gridWrap._centerYs || [];
-    centerXs.forEach(x => {
-      const xPos = PAD + x * cellSize + cellSize / 2;
-      ['top', 'bottom'].forEach(side => {
-        const tick = document.createElement('div');
-        tick.className = 'center-guide vertical';
-        tick.style.left = xPos + 'px';
-        tick.style[side] = '-7px';
-        gridWrap.appendChild(tick);
-      });
-    });
-    centerYs.forEach(y => {
-      const yPos = PAD + y * cellSize + cellSize / 2;
-      ['left', 'right'].forEach(side => {
-        const tick = document.createElement('div');
-        tick.className = 'center-guide horizontal';
-        tick.style.top = yPos + 'px';
-        tick.style[side] = '-7px';
-        gridWrap.appendChild(tick);
-      });
-    });
-  }
-
-  function repositionCalibration(gridWrap, cellSize) {
-    gridWrap.querySelectorAll('.calibration-square').forEach(sq => {
-      sq.style.width = cellSize + 'px';
-      sq.style.height = cellSize + 'px';
-    });
-  }
 
   function applyCellSize(gridWrap, gridW, gridH, cellSize) {
     const grid = gridWrap.querySelector('.grid');
     grid.style.gridTemplateColumns = `repeat(${gridW}, ${cellSize}px)`;
     grid.style.gridTemplateRows = `repeat(${gridH}, ${cellSize}px)`;
-    gridWrap.querySelectorAll('.cell').forEach(c => {
+    gridWrap.querySelectorAll('.grid .cell').forEach(c => {
       c.style.width = cellSize + 'px';
       c.style.height = cellSize + 'px';
     });
-    repositionCenterGuides(gridWrap, gridW, gridH, cellSize);
-    repositionCalibration(gridWrap, cellSize);
+
+    const calRow = gridWrap.querySelector('.calibration-row');
+    if (calRow) {
+      calRow.style.gridTemplateColumns = `repeat(${gridW}, ${cellSize}px)`;
+      calRow.querySelectorAll('.calibration-cell').forEach(c => {
+        c.style.width = cellSize + 'px';
+        c.style.height = cellSize + 'px';
+      });
+    }
+    displayCellSize = cellSize;
   }
 
-  // fits the grid to the popup's current size, keeping full aspect ratio
-  // visible on one axis while cropping the other to ~3 lines for focus
+  // fits the whole grid (plus the reference row) inside the popup's click
+  // area with no cropping or scrolling — recalculated on every resize
   function layoutPipView() {
     if (!pipWindow || !currentGridWrap) return;
-    const area = pipWindow.document.querySelector('.pip-grid-area');
+    const area = pipWindow.document.querySelector('.pip-click-area');
     if (!area) return;
     const gridW = gridDims.w, gridH = gridDims.h;
+    const totalRows = gridH + 1; // + reference row
 
-    if (sweepDirection === 'vertical') {
-      area.style.width = '';
-      area.style.height = '100%';
-      const availH = area.clientHeight;
-      focusCellSize = Math.max(2, Math.floor((availH - PAD * 2 - BORDER * 2) / gridH));
-      area.style.width = (focusCellSize * 3 + PAD * 2 + BORDER * 2) + 'px';
-    } else {
-      area.style.height = '';
-      area.style.width = '100%';
-      const availW = area.clientWidth;
-      focusCellSize = Math.max(2, Math.floor((availW - PAD * 2 - BORDER * 2) / gridW));
-      area.style.height = (focusCellSize * 3 + PAD * 2 + BORDER * 2) + 'px';
-    }
+    const availW = Math.max(20, area.clientWidth - 16);
+    const availH = Math.max(20, area.clientHeight - 16);
 
-    applyCellSize(currentGridWrap, gridW, gridH, focusCellSize);
-    updateLineFocus();
+    const sizeByW = Math.floor((availW - PAD * 2 - BORDER * 2) / gridW);
+    const sizeByH = Math.floor((availH - PAD * 2 - BORDER * 2) / totalRows);
+    const size = Math.max(2, Math.min(sizeByW, sizeByH));
+
+    applyCellSize(currentGridWrap, gridW, gridH, size);
   }
 
   function restoreManualCellSize() {
@@ -886,14 +826,18 @@
     gridWrap.dataset.cellSize = cellSize;
 
     if (pipWindow) {
-      let area = pipWindow.document.querySelector('.pip-grid-area');
+      let area = pipWindow.document.querySelector('.pip-click-area');
       if (!area) {
         area = pipWindow.document.createElement('div');
-        area.className = 'pip-grid-area';
+        area.className = 'pip-click-area';
+        const label = pipWindow.document.createElement('div');
+        label.className = 'click-area-label';
+        label.textContent = 'Click anywhere to copy the next color';
+        area.appendChild(label);
         area.addEventListener('click', () => { if (autoModeEnabled) goNext(); });
         pipWindow.document.body.appendChild(area);
       }
-      area.innerHTML = '';
+      area.querySelectorAll('.grid-wrap').forEach(el => el.remove());
       area.appendChild(gridWrap);
       layoutPipView();
     } else {
@@ -934,16 +878,18 @@
     if (autoModeEnabled) {
       attachWatcher(pipWindow);
       ensureAutoPanel();
-      updateLineFocus();
+      startLiveTimer();
+    } else {
+      ensurePipIdleBar();
     }
 
     pipWindow.addEventListener('pagehide', () => {
       const stillAuto = autoModeEnabled;
       pipWindow = null;
+      pipIdleBarEl = null;
       stage.innerHTML = '';
       stage.appendChild(currentGridWrap);
       restoreManualCellSize();
-      clearLineFocus();
       if (stillAuto) {
         attachWatcher(window);
         ensureAutoPanel();
@@ -960,10 +906,10 @@
 
     if (autoModeEnabled) {
       if (pipWindow && cell.ownerDocument === pipWindow.document) {
-        return; // the popup's click-anywhere listener on .pip-grid-area handles this
+        return; // the popup's click-area listener handles advancing
       }
-      const idx = sequence.indexOf(cell);
-      if (idx !== -1) { autoPointer = idx; activateCell(cell); }
+      autoPointer = index;
+      activateCell(cell);
       return;
     }
 
@@ -976,6 +922,32 @@
   }
 
   // ---------- image + grid building ----------
+
+  function buildCalibrationRow(gridW, cellSize) {
+    const row = document.createElement('div');
+    row.className = 'calibration-row';
+    row.style.gridTemplateColumns = `repeat(${gridW}, ${cellSize}px)`;
+
+    const centerXs = gridW % 2 === 1 ? [(gridW - 1) / 2] : [gridW / 2 - 1, gridW / 2];
+
+    for (let x = 0; x < gridW; x++) {
+      const hex = cycleColorFor(x, gridW);
+      const sq = document.createElement('div');
+      sq.className = 'cell calibration-cell';
+      sq.style.width = cellSize + 'px';
+      sq.style.height = cellSize + 'px';
+      sq.style.background = hex;
+      sq.title = hex + ' — alignment reference';
+      if (centerXs.includes(x)) sq.classList.add('center-mark-cell');
+      sq.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const win = sq.ownerDocument.defaultView;
+        copyToClipboard(hex, win).then(ok => showToastIn(win, ok ? ('Copied ' + hex) : 'Copy failed'));
+      });
+      row.appendChild(sq);
+    }
+    return row;
+  }
 
   function buildGridFromImage(img, gridW, gridH, cellSize) {
     workCanvas.width = gridW;
@@ -999,11 +971,6 @@
     grid.style.gridTemplateColumns = `repeat(${gridW}, ${cellSize}px)`;
     grid.style.gridTemplateRows = `repeat(${gridH}, ${cellSize}px)`;
 
-    const centerXs = gridW % 2 === 1 ? [(gridW - 1) / 2] : [gridW / 2 - 1, gridW / 2];
-    const centerYs = gridH % 2 === 1 ? [(gridH - 1) / 2] : [gridH / 2 - 1, gridH / 2];
-    gridWrap._centerXs = centerXs;
-    gridWrap._centerYs = centerYs;
-
     for (let y = 0; y < gridH; y++) {
       for (let x = 0; x < gridW; x++) {
         const idx = (y * gridW + x) * 4;
@@ -1019,7 +986,8 @@
         cell.dataset.hex = hex;
         cell.dataset.gx = x;
         cell.dataset.gy = y;
-        cell.style.setProperty('--check-color', dominantColor(hex));
+        // checkmark color matches the reference row's expected color for this column
+        cell.style.setProperty('--check-color', cycleColorFor(x, gridW));
 
         const cellIndex = orderedCells.length;
         cell.addEventListener('click', () => handleCellClick(cellIndex));
@@ -1029,27 +997,9 @@
       }
     }
 
+    const calibrationRow = buildCalibrationRow(gridW, cellSize);
+    gridWrap.appendChild(calibrationRow);
     gridWrap.appendChild(grid);
-    repositionCenterGuides(gridWrap, gridW, gridH, cellSize);
-
-    // RGB alignment reference squares, right to left: red, green, blue
-    const strip = document.createElement('div');
-    strip.className = 'calibration-strip';
-    [['#0000ff'], ['#00ff00'], ['#ff0000']].forEach(([hex]) => {
-      const sq = document.createElement('div');
-      sq.className = 'calibration-square';
-      sq.style.width = cellSize + 'px';
-      sq.style.height = cellSize + 'px';
-      sq.style.background = hex;
-      sq.title = hex + ' — alignment reference';
-      sq.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const win = sq.ownerDocument.defaultView;
-        copyToClipboard(hex, win).then(ok => showToastIn(win, ok ? ('Copied ' + hex) : 'Copy failed'));
-      });
-      strip.appendChild(sq);
-    });
-    gridWrap.appendChild(strip);
 
     return gridWrap;
   }
@@ -1111,10 +1061,8 @@
 
       mountGrid(gridWrap, data.gridW, data.gridH, data.cellSize);
       infoText.textContent = `${data.gridW} × ${data.gridH} = ${data.gridW * data.gridH} blocks`;
-      cornerSelect.value = data.corner || 'tl';
-      directionSelect.value = data.direction || 'horizontal';
 
-      startAuto(data.corner || 'tl', data.direction || 'horizontal');
+      startAuto();
     };
     img.src = data.imageDataURL;
   }
@@ -1181,7 +1129,7 @@
   startAutoBtn.addEventListener('click', async () => {
     if (!currentGridWrap) return;
     if ('documentPictureInPicture' in window) await openPip();
-    startAuto(cornerSelect.value, directionSelect.value);
+    startAuto();
   });
 
   offerResume();
