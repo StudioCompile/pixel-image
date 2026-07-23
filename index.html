@@ -313,15 +313,17 @@
     align-items: center;
     gap: 6px;
     padding: 7px 12px;
-    background: var(--ink);
-    color: #fff;
-    border: 1px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid #cfd1d4;
     border-radius: 6px;
     font-size: 12px;
     font-weight: 600;
     cursor: pointer;
   }
-  .dir-btn:hover { background: #2a2d33; }
+  .dir-btn:hover { background: #f2f2f3; }
+  .dir-btn.selected { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .dir-btn.selected:hover { background: #2a2d33; }
   .dir-btn .glyph { font-size: 14px; }
 
   /* ---------------- auto mode click-to-copy overlay ---------------- */
@@ -552,6 +554,7 @@
   let autoSequence = [];
 
   let direction = 'right'; // 'right' | 'left' — which way each row reads
+  let vertDirection = 'down'; // 'down' | 'up' — which way rows proceed after the start row
   let startCell = null; // a cell from allCells, or null for the default edge
   let pickingStart = false; // true while the popup is waiting for a start-block click
   let autoModeEnabled = false;
@@ -654,15 +657,15 @@
 
   // ---------- auto mode ordering ----------
 
-  // Rows always proceed downward starting at the picked block's row — that's
-  // what lets you resume partway down a grid you already started elsewhere.
-  // "direction" only controls which way each row reads: left = decreasing
-  // column, right = increasing column. The very first row starts exactly at
-  // the picked block and only covers cells from there to that row's edge;
-  // every row after that is read in full.
+  // "vertDirection" controls which way rows proceed after the start row
+  // (down toward the bottom, or up toward the top). "direction" controls
+  // which way each row reads: left = decreasing column, right = increasing
+  // column. The very first row starts exactly at the picked block and only
+  // covers cells from there to that row's edge; every row after that is
+  // read in full.
   function computeAutoSequence() {
     const gridW = gridDims.w, gridH = gridDims.h;
-    const startRow = startCell ? +startCell.dataset.gy : 0;
+    const startRow = startCell ? +startCell.dataset.gy : (vertDirection === 'down' ? 0 : gridH - 1);
     const startCol = startCell ? +startCell.dataset.gx : (direction === 'right' ? 0 : gridW - 1);
 
     const byRow = new Map();
@@ -672,10 +675,14 @@
       byRow.get(y).push(c);
     });
 
+    const rows = [];
+    if (vertDirection === 'down') { for (let y = startRow; y < gridH; y++) rows.push(y); }
+    else { for (let y = startRow; y >= 0; y--) rows.push(y); }
+
     const seq = [];
-    for (let y = startRow; y < gridH; y++) {
+    rows.forEach((y, i) => {
       let rowCells = (byRow.get(y) || []).slice();
-      if (y === startRow) {
+      if (i === 0) {
         rowCells = rowCells.filter(c => {
           const x = +c.dataset.gx;
           return direction === 'right' ? x >= startCol : x <= startCol;
@@ -685,7 +692,7 @@
         ? (+a.dataset.gx - +b.dataset.gx)
         : (+b.dataset.gx - +a.dataset.gx));
       seq.push(...rowCells);
-    }
+    });
     return seq;
   }
 
@@ -1002,9 +1009,9 @@
 
   // Three-step flow, entirely explicit:
   //  1. Press "Auto Mode" — grid clicks now pick a start block instead of copying.
-  //  2. Click any block — it's marked, and a Left/Right prompt appears.
-  //  3. Press Left or Right — auto mode begins from that block, reading each
-  //     row in that direction, working down through the rest of the grid.
+  //  2. Click any block — it's marked, and direction controls appear.
+  //  3. Choose which way rows go (down/up) and which way each row reads
+  //     (left/right), then press "Start Auto Mode".
   // Until step 1 is pressed, clicking blocks in the popup just copies their
   // color, exactly like the main page (non-auto mode still fully works here).
   function ensurePipIdleBar() {
@@ -1074,35 +1081,64 @@
         const dirRow = doc.createElement('div');
         dirRow.className = 'pip-idle-row';
 
-        const dirPicker = doc.createElement('div');
-        dirPicker.className = 'dir-picker';
-        const dirLabel = doc.createElement('span');
-        dirLabel.className = 'dir-picker-label';
-        dirLabel.textContent = 'Which way should each row read?';
-        dirPicker.appendChild(dirLabel);
+        const vertPicker = doc.createElement('div');
+        vertPicker.className = 'dir-picker';
+        const vertLabel = doc.createElement('span');
+        vertLabel.className = 'dir-picker-label';
+        vertLabel.textContent = 'Rows go';
+        vertPicker.appendChild(vertLabel);
 
-        const dirs = [
+        const horizPicker = doc.createElement('div');
+        horizPicker.className = 'dir-picker';
+        const horizLabel = doc.createElement('span');
+        horizLabel.className = 'dir-picker-label';
+        horizLabel.textContent = 'Each row reads';
+        horizPicker.appendChild(horizLabel);
+
+        const verts = [
+          { key: 'down', glyph: '↓', label: 'Down' },
+          { key: 'up', glyph: '↑', label: 'Up' }
+        ];
+        const horizs = [
           { key: 'left', glyph: '←', label: 'Left' },
           { key: 'right', glyph: '→', label: 'Right' }
         ];
-        dirs.forEach(d => {
-          const b = doc.createElement('button');
-          b.type = 'button';
-          b.className = 'dir-btn';
-          const glyph = doc.createElement('span');
-          glyph.className = 'glyph';
-          glyph.textContent = d.glyph;
-          b.appendChild(glyph);
-          b.appendChild(doc.createTextNode(d.label));
-          b.addEventListener('click', () => {
-            direction = d.key;
-            pickingStart = false;
-            startAuto();
+
+        function makeToggleGroup(picker, options, getValue, setValue) {
+          const btns = [];
+          options.forEach(o => {
+            const b = doc.createElement('button');
+            b.type = 'button';
+            b.className = 'dir-btn' + (getValue() === o.key ? ' selected' : '');
+            const glyph = doc.createElement('span');
+            glyph.className = 'glyph';
+            glyph.textContent = o.glyph;
+            b.appendChild(glyph);
+            b.appendChild(doc.createTextNode(o.label));
+            b.addEventListener('click', () => {
+              setValue(o.key);
+              btns.forEach(x => x.el.classList.toggle('selected', x.key === o.key));
+            });
+            btns.push({ key: o.key, el: b });
+            picker.appendChild(b);
           });
-          dirPicker.appendChild(b);
+        }
+
+        makeToggleGroup(vertPicker, verts, () => vertDirection, v => { vertDirection = v; });
+        makeToggleGroup(horizPicker, horizs, () => direction, v => { direction = v; });
+
+        const startAutoBtn = doc.createElement('button');
+        startAutoBtn.className = 'accent-btn';
+        startAutoBtn.type = 'button';
+        startAutoBtn.textContent = 'Start Auto Mode';
+        startAutoBtn.addEventListener('click', () => {
+          pickingStart = false;
+          startAuto();
         });
 
-        dirRow.appendChild(dirPicker);
+        dirRow.appendChild(vertPicker);
+        dirRow.appendChild(horizPicker);
+        dirRow.appendChild(startAutoBtn);
         bar.appendChild(dirRow);
       }
     }
