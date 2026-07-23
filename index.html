@@ -2,128 +2,87 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Pixel Grid</title>
+<title>Pixel Grid Color Picker</title>
 <style>
-  :root {
-    --ink: #14161a;
-    --ink-soft: #6b7076;
-    --line: #e2e3e6;
-    --paper: #ffffff;
-    --accent: #b91c1c;
-    --accent-dark: #7f1414;
-    --red: #dc2626;
-    --green: #16a34a;
-    --blue: #2563eb;
-  }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     font-family: -apple-system, "Segoe UI", Arial, sans-serif;
-    background: var(--paper);
-    color: var(--ink);
-  }
-
-  .app-header {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--line);
-  }
-  .app-header h1 {
-    margin: 0;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-  }
-  .app-header span {
-    font-size: 12px;
-    color: var(--ink-soft);
+    background: #ffffff;
+    color: #111111;
   }
 
   .toolbar-row {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;
-    gap: 16px;
-    padding: 14px 20px;
-    border-bottom: 1px solid var(--line);
+    gap: 14px;
+    padding: 12px 20px;
+    border-bottom: 1px solid #dddddd;
   }
 
-  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field { display: flex; flex-direction: column; gap: 3px; }
   .field label {
     font-size: 10px;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+    color: #666666;
   }
 
   input[type="file"], input[type="number"] {
-    border: 1px solid #cfd1d4;
-    border-radius: 6px;
+    border: 1px solid #cccccc;
     padding: 7px 9px;
     font-size: 13px;
-    background: var(--paper);
-    color: var(--ink);
+    background: #ffffff;
+    color: #111111;
     outline: none;
   }
   input[type="number"] { width: 84px; }
-  input[type="number"]:focus, input[type="file"]:focus { border-color: var(--ink); }
 
   input[type="file"]::file-selector-button {
-    border: 1px solid var(--ink);
-    border-radius: 5px;
-    background: var(--paper);
-    color: var(--ink);
+    border: 1px solid #111111;
+    background: #ffffff;
+    color: #111111;
     padding: 5px 9px;
     margin-right: 8px;
     cursor: pointer;
   }
-  input[type="file"]::file-selector-button:hover { background: var(--ink); color: #fff; }
+  input[type="file"]::file-selector-button:hover { background: #111111; color: #ffffff; }
 
   button {
-    border: 1px solid var(--ink);
-    border-radius: 6px;
-    background: var(--ink);
-    color: #fff;
-    padding: 9px 16px;
+    border: 1px solid #111111;
+    background: #111111;
+    color: #ffffff;
+    padding: 8px 16px;
     font-size: 13px;
-    font-weight: 600;
     cursor: pointer;
     height: fit-content;
-    white-space: nowrap;
   }
-  button:hover { background: #2a2d33; }
-  button:disabled { background: #d8d9db; border-color: #d8d9db; color: #fff; cursor: not-allowed; }
+  button:hover { background: #333333; }
+  button:disabled { background: #cccccc; border-color: #cccccc; cursor: not-allowed; }
 
-  .accent-btn { background: var(--accent); border-color: var(--accent); }
-  .accent-btn:hover:not(:disabled) { background: var(--accent-dark); border-color: var(--accent-dark); }
+  #pipBtn { background: #ffffff; color: #111111; }
+  #pipBtn:hover:not(:disabled) { background: #111111; color: #ffffff; }
+  #pipBtn:disabled { background: #ffffff; color: #cccccc; border-color: #cccccc; }
 
-  .ghost-btn { background: var(--paper); color: var(--ink); }
-  .ghost-btn:hover:not(:disabled) { background: #f2f2f3; }
+  .accent-btn { background: #b91c1c; border-color: #b91c1c; }
+  .accent-btn:hover:not(:disabled) { background: #7f1414; border-color: #7f1414; }
+  .accent-btn:disabled { background: #cccccc; border-color: #cccccc; }
 
-  .info { font-size: 12px; color: var(--ink-soft); margin-left: auto; align-self: center; }
+  .info { font-size: 12px; color: #666666; margin-left: auto; }
 
-  .stage { padding: 20px; }
+  .stage { padding: 18px; }
 
   .grid-wrap {
     display: inline-block;
     position: relative;
-    border: 1px solid var(--line);
-    border-radius: 8px;
+    border: 1px solid #dddddd;
     padding: 6px;
-    background: var(--paper);
-    overflow: hidden;
+    background: #ffffff;
   }
 
   .calibration-row { display: grid; line-height: 0; }
-  .calibration-cell { position: relative; }
-  .calibration-cell::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35);
-  }
+  .calibration-cell { cursor: default; }
   .center-mark-cell {
     box-shadow: inset 0 0 0 2px #ffffff, inset 0 0 0 4px #111111;
   }
@@ -136,7 +95,7 @@
     content: "";
     position: absolute;
     inset: 0;
-    outline: 2px solid var(--ink);
+    outline: 2px solid #111111;
     outline-offset: -2px;
   }
 
@@ -160,36 +119,25 @@
     text-shadow: 0 0 2px #fff, 0 0 2px #fff;
   }
 
-  .cell.current { outline: 3px solid var(--ink); outline-offset: -3px; z-index: 3; }
+  .cell.current { outline: 3px solid #111111; outline-offset: -3px; z-index: 3; }
+
   .cell.next-preview {
     outline: 1px solid #ffffff;
     outline-offset: -3px;
     box-shadow: inset 0 0 0 1px #000000;
     z-index: 3;
   }
-  .cell.start-marker {
-    outline: 3px solid var(--accent);
-    outline-offset: -3px;
-    z-index: 4;
-  }
-  .cell.start-marker::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    box-shadow: inset 0 0 0 5px rgba(185, 28, 28, 0.35);
-  }
 
-  .placeholder { padding: 70px 20px; text-align: center; color: #a6a8ab; font-size: 14px; }
+  .placeholder { padding: 60px 20px; text-align: center; color: #999999; font-size: 14px; }
 
   .toast {
     position: fixed;
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%) translateY(20px);
-    background: var(--ink);
+    background: #111111;
     color: #ffffff;
     padding: 10px 18px;
-    border-radius: 8px;
     font-size: 13px;
     opacity: 0;
     pointer-events: none;
@@ -203,224 +151,33 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 12px;
-    padding: 10px 20px;
-    border-bottom: 2px solid var(--accent);
-    background: var(--paper);
+    padding: 8px 16px;
+    border-bottom: 2px solid #b91c1c;
+    background: #ffffff;
     font-size: 13px;
   }
-  .resume-banner button { padding: 6px 12px; font-size: 12px; }
-  .resume-dismiss { background: var(--paper); color: var(--ink); border: 1px solid #cfd1d4; }
+  .resume-banner button { padding: 5px 10px; font-size: 12px; }
+  .resume-dismiss { background: #ffffff; color: #111111; border: 1px solid #cccccc; }
   .resume-dismiss:hover { background: #f2f2f2; }
 
-  /* ---------------- popup idle controls ---------------- */
+  /* --- pip idle bar: shown before auto mode starts --- */
 
   .pip-idle-bar {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--line);
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid #dddddd;
     flex-shrink: 0;
     font-size: 12px;
   }
-  .pip-idle-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 10px;
-  }
-  .pip-idle-info { color: var(--ink-soft); }
-
-  .start-indicator {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
-    border: 1px solid #cfd1d4;
-    border-radius: 6px;
-    background: #fafafa;
-    font-size: 12px;
-  }
-  .start-indicator.picked { border-color: var(--accent); background: #fdf1f1; }
-  .start-indicator-text { color: var(--ink-soft); }
-  .start-indicator.picked .start-indicator-text { color: var(--accent); font-weight: 600; }
-  .start-clear-btn {
-    width: 18px;
-    height: 18px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    color: var(--ink-soft);
-    border: none;
-    border-radius: 50%;
+  .pip-idle-bar select {
+    border: 1px solid #cccccc;
+    padding: 5px 6px;
     font-size: 11px;
-    cursor: pointer;
   }
-  .start-clear-btn:hover { background: #e6e6e7; color: var(--ink); }
-
-  .dir-section {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .dir-section-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--ink-soft);
-  }
-  .dir-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .dir-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 12px;
-    background: var(--paper);
-    color: var(--ink);
-    border: 1px solid #cfd1d4;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  .dir-btn:hover:not(:disabled) { background: #f2f2f3; border-color: var(--ink); }
-  .dir-btn .glyph { font-size: 14px; }
-  
-  .auto-start-btn {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-    padding: 7px 16px;
-  }
-  .auto-start-btn:hover:not(:disabled) { background: var(--accent-dark); border-color: var(--accent-dark); }
-
-  /* ---------------- auto mode overlay ---------------- */
-
-  .auto-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    cursor: pointer;
-    border: 3px solid var(--accent);
-    box-sizing: border-box;
-    z-index: 50;
-    user-select: none;
-  }
-  .auto-overlay .scrim {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, rgba(10,10,12,0.62) 0, rgba(10,10,12,0.0) 130px);
-    pointer-events: none;
-  }
-  .auto-overlay-header {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    background: rgba(0,0,0,0.3);
-    backdrop-filter: blur(8px);
-  }
-  .auto-icon {
-    width: 22px;
-    height: 22px;
-    border-radius: 4px;
-    border: 1px solid rgba(255,255,255,0.6);
-    flex-shrink: 0;
-  }
-  .auto-header-text {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.25;
-  }
-  .auto-progress-text { color: #ffffff; font-size: 11px; font-weight: 700; }
-  .auto-ago-text { color: rgba(255,255,255,0.7); font-size: 10px; }
-
-  .auto-header-spacer { flex: 1; }
-
-  .auto-control-btn {
-    padding: 4px 8px;
-    font-size: 11px;
-    font-weight: 600;
-    background: rgba(255,255,255,0.15);
-    color: #ffffff;
-    border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 4px;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .auto-control-btn:hover { background: rgba(255,255,255,0.25); }
-  .auto-control-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-  .auto-control-btn.active { background: rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.5); }
-  .auto-control-btn.close:hover { background: var(--accent); border-color: var(--accent); }
-
-  .auto-click-area {
-    flex: 1;
-    min-height: 0;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .hover-zone {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 140px;
-    height: 80px;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    border: 2px dashed rgba(255,255,255,0.85);
-    border-radius: 8px;
-    background: rgba(255,255,255,0.08);
-    color: #fff;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    text-align: center;
-    z-index: 4;
-  }
-  .hover-zone.active { display: flex; }
-  .hover-zone .hz-icon { font-size: 16px; font-weight: 400; }
-
-  .auto-flash {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.9);
-    font-size: 28px;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    color: #fff;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.55);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.12s ease, transform 0.12s ease;
-    z-index: 3;
-  }
-  .auto-flash.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-
-  .auto-footer {
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
+  .pip-idle-bar button { padding: 6px 12px; font-size: 12px; margin-left: auto; }
 
   .pip-click-area {
     flex: 1;
@@ -430,15 +187,84 @@
     justify-content: center;
     position: relative;
     overflow: hidden;
+    cursor: pointer;
+  }
+  .pip-click-area.auto-active { border: 2px solid #111111; }
+
+  /* --- translucent auto-mode overlay, faded to black at the top --- */
+
+  .auto-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 10px 14px 18px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0) 100%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    z-index: 10;
+    color: #ffffff;
+  }
+
+  .auto-overlay-exit {
+    width: 24px; height: 24px;
+    border: 1px solid #ffffff;
+    background: rgba(0,0,0,0.35);
+    color: #ffffff;
+    font-size: 12px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .auto-overlay-exit:hover { background: #ffffff; color: #111111; }
+
+  .auto-swatch-block { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .auto-swatch { border: 1px solid rgba(255,255,255,0.6); }
+  .auto-swatch.current { width: 44px; height: 44px; border: 2px solid #ffffff; }
+  .auto-swatch.previous { width: 26px; height: 26px; opacity: 0.8; }
+  .auto-hex { font-family: monospace; font-size: 10px; }
+
+  .auto-family-badge { display: flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 700; }
+  .auto-family-dot { width: 14px; height: 14px; border: 1px solid rgba(255,255,255,0.7); }
+
+  .auto-status-block { display: flex; flex-direction: column; gap: 2px; font-size: 11px; min-width: 68px; }
+  .auto-progress { font-weight: 600; }
+  .auto-ago { opacity: 0.8; }
+
+  .auto-nav-btn {
+    border: 1px solid #ffffff;
+    background: rgba(0,0,0,0.35);
+    color: #ffffff;
+    padding: 6px 10px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .auto-nav-btn:hover:not(:disabled) { background: #ffffff; color: #111111; }
+  .auto-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .auto-sound-toggle { font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+
+  .auto-save-btn {
+    border: 1px solid #ffffff;
+    background: rgba(0,0,0,0.35);
+    color: #ffffff;
+    padding: 6px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    margin-left: auto;
+  }
+  .auto-save-btn:hover { background: #ffffff; color: #111111; }
+
+  .auto-hint {
+    width: 100%;
+    font-size: 10px;
+    opacity: 0.8;
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
 </style>
 </head>
 <body>
-
-<div class="app-header">
-  <h1>Pixel Grid</h1>
-  <span>image → click-to-copy color grid, pop it out and let auto mode do the counting</span>
-</div>
 
 <div id="resumeBannerSlot"></div>
 
@@ -460,7 +286,7 @@
     <input type="number" id="cellSizeInput" value="22" min="4" max="64">
   </div>
   <button id="generateBtn" disabled>Generate</button>
-  <button id="pipBtn" class="ghost-btn" disabled>Pop out</button>
+  <button id="pipBtn" disabled>Pop out</button>
   <div class="info" id="infoText"></div>
 </div>
 
@@ -491,8 +317,7 @@
   const PIP_DEFAULT_W = 560;
   const PIP_DEFAULT_H = 480;
   const RGB_COLORS = ['#ff0000', '#00ff00', '#0000ff'];
-  const RGB_COLOR_HEX = ['#dc2626', '#16a34a', '#2563eb']; // Red, Green, Blue for checkmarks
-  const RGB_NAMES = ['RED', 'GREEN', 'BLUE'];
+  const RGB_NAMES = { '#ff0000': 'Red', '#00ff00': 'Green', '#0000ff': 'Blue' };
 
   let loadedImage = null;
   let loadedImageDataURL = null;
@@ -501,25 +326,25 @@
   let pipIdleBarEl = null;
   let gridDims = { w: 0, h: 0 };
 
-  let allCells = [];
-  let autoSequence = [];
+  // fixed creation order: row-major, top-left to bottom-right
+  let orderedCells = [];
+  // the order auto mode actually walks (depends on chosen start corner)
+  let sequence = [];
 
-  let direction = 'down'; // 'down' | 'up' | 'right' | 'left'
-  let nextRowDirection = 'down'; // For horizontal directions: which way to go to next column
-  let startCell = null;
+  let startVertical = 'top';      // 'top' | 'bottom'
+  let startHorizontal = 'left';   // 'left' | 'right'
+
   let autoModeEnabled = false;
   let autoPointer = -1;
   let currentHex = null;
   let previousHex = null;
-  let lastLineKey = null;
+  let lastRow = null;
   let lastCopiedAt = null;
   let soundEnabled = true;
-  let hoverModeEnabled = false;
   let awaitingReturn = false;
   let watchedWindow = null;
+  let autoOverlayInstance = null;
   let liveTimerId = null;
-
-  let overlayEls = null;
 
   if (!('documentPictureInPicture' in window)) {
     pipBtn.title = 'Picture-in-picture is not supported in this browser (try Chrome or Edge).';
@@ -529,12 +354,11 @@
     return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
   }
 
-  function bandIndexFor(x, gridW) {
-    return (gridW - 1 - x) % 3;
+  // red starts at the rightmost column, then green, then blue, repeating leftward
+  function cycleColorFor(x, gridW) {
+    const distFromRight = gridW - 1 - x;
+    return RGB_COLORS[distFromRight % 3];
   }
-  function bandColorFor(x, gridW) { return RGB_COLORS[bandIndexFor(x, gridW)]; }
-  function bandColorHexFor(x, gridW) { return RGB_COLOR_HEX[bandIndexFor(x, gridW)]; }
-  function bandNameFor(x, gridW) { return RGB_NAMES[bandIndexFor(x, gridW)]; }
 
   // ---------- clipboard ----------
 
@@ -588,8 +412,7 @@
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
-        u.rate = 2.0;
-        u.pitch = 1;
+        u.rate = 1.9;
         u.volume = 0.6;
         window.speechSynthesis.speak(u);
       }
@@ -604,170 +427,123 @@
     return m + 'm ' + (s % 60) + 's ago';
   }
 
-  // ---------- auto mode ordering ----------
+  // ---------- auto mode engine ----------
 
-  function isRowDirection() { return direction === 'down' || direction === 'up'; }
-
-  // FIXED: Proper direction handling - left goes left (decreasing x), right goes right (increasing x)
-  function computeAutoSequence() {
-    const gridW = gridDims.w, gridH = gridDims.h;
+  function buildSequence() {
+    const gw = gridDims.w, gh = gridDims.h;
+    const ys = []; for (let y = 0; y < gh; y++) ys.push(y);
+    const xs = []; for (let x = 0; x < gw; x++) xs.push(x);
+    const orderedYs = startVertical === 'top' ? ys : ys.slice().reverse();
+    const orderedXs = startHorizontal === 'left' ? xs : xs.slice().reverse();
     const seq = [];
-    
-    if (isRowDirection()) {
-      // Vertical direction (down/up) - iterate through rows
-      const startRow = startCell ? +startCell.dataset.gy : (direction === 'down' ? 0 : gridH - 1);
-      const rows = [];
-      if (direction === 'down') {
-        for (let y = startRow; y < gridH; y++) rows.push(y);
-      } else {
-        for (let y = startRow; y >= 0; y--) rows.push(y);
-      }
-      const byRow = new Map();
-      allCells.forEach(c => {
-        const y = +c.dataset.gy;
-        if (!byRow.has(y)) byRow.set(y, []);
-        byRow.get(y).push(c);
-      });
-      rows.forEach(y => {
-        const rowCells = (byRow.get(y) || []).slice().sort((a, b) => +a.dataset.gx - +b.dataset.gx);
-        seq.push(...rowCells);
-      });
-    } else {
-      // Horizontal direction (left/right) - iterate through columns
-      const startCol = startCell ? +startCell.dataset.gx : (direction === 'right' ? 0 : gridW - 1);
-      const cols = [];
-      if (direction === 'right') {
-        // Going right: start from left, go to right
-        for (let x = startCol; x < gridW; x++) cols.push(x);
-      } else {
-        // Going left: start from right, go to left
-        for (let x = startCol; x >= 0; x--) cols.push(x);
-      }
-      const byCol = new Map();
-      allCells.forEach(c => {
-        const x = +c.dataset.gx;
-        if (!byCol.has(x)) byCol.set(x, []);
-        byCol.get(x).push(c);
-      });
-      cols.forEach(x => {
-        let colCells = (byCol.get(x) || []).slice();
-        // Sort by row based on nextRowDirection
-        if (nextRowDirection === 'down') {
-          colCells.sort((a, b) => +a.dataset.gy - +b.dataset.gy);
-        } else {
-          colCells.sort((a, b) => +b.dataset.gy - +a.dataset.gy);
-        }
-        seq.push(...colCells);
-      });
-    }
+    for (const y of orderedYs) for (const x of orderedXs) seq.push(orderedCells[y * gw + x]);
     return seq;
   }
 
-  function lineKeyOf(cell) { return isRowDirection() ? cell.dataset.gy : cell.dataset.gx; }
+  function rowOf(cell) { return parseInt(cell.dataset.gy, 10); }
 
-  // ---------- stepping through cells ----------
+  function remainingInRow(pointerIdx) {
+    const row = rowOf(sequence[pointerIdx]);
+    let remaining = 0;
+    for (let i = pointerIdx + 1; i < sequence.length; i++) {
+      if (rowOf(sequence[i]) !== row) break;
+      remaining++;
+    }
+    return remaining;
+  }
 
   function activateCell(cell) {
-    autoSequence.forEach(c => c.classList.remove('current', 'next-preview'));
+    orderedCells.forEach(c => c.classList.remove('current', 'next-preview'));
     if (currentHex !== null) previousHex = currentHex;
     cell.classList.add('used');
     cell.classList.add('current');
     currentHex = cell.dataset.hex;
     lastCopiedAt = Date.now();
 
-    const gx = +cell.dataset.gx;
-    const gridW = gridDims.w;
-    const bandName = bandNameFor(gx, gridW);
-    const bandColor = bandColorFor(gx, gridW);
-
-    if (autoPointer + 1 < autoSequence.length) {
-      autoSequence[autoPointer + 1].classList.add('next-preview');
-    }
+    if (autoPointer + 1 < sequence.length) sequence[autoPointer + 1].classList.add('next-preview');
 
     const win = cell.ownerDocument.defaultView;
     copyToClipboard(currentHex, win).then(ok => {
       showToastIn(win, ok ? ('Copied ' + currentHex) : 'Copy failed');
     });
 
-    flashBand(bandName, bandColor);
-
-    const key = lineKeyOf(cell);
-    if (lastLineKey !== null && key !== lastLineKey) {
-      speak(isRowDirection() ? 'New row, ' + bandName : 'New column, ' + bandName);
+    const familyName = cell.dataset.family;
+    const row = rowOf(cell);
+    let phrase = familyName;
+    if (lastRow !== null && row !== lastRow) {
+      phrase = 'Row. ' + familyName;
     } else {
-      speak(bandName);
+      const remaining = remainingInRow(autoPointer);
+      if (remaining > 0 && remaining <= 2) phrase = remaining + ' left. ' + familyName;
     }
-    lastLineKey = key;
+    lastRow = row;
+    speak(phrase);
 
-    updateOverlay();
+    updateAutoOverlay();
   }
 
   function goNext() {
     if (!autoModeEnabled) return;
-    if (autoPointer >= autoSequence.length - 1) {
+    if (autoPointer >= sequence.length - 1) {
       showToastIn(pipWindow || window, 'All done!');
       return;
     }
     autoPointer += 1;
-    activateCell(autoSequence[autoPointer]);
+    activateCell(sequence[autoPointer]);
   }
 
   function goBack() {
     if (!autoModeEnabled) return;
     if (autoPointer <= 0) return;
     autoPointer -= 1;
-    activateCell(autoSequence[autoPointer]);
+    activateCell(sequence[autoPointer]);
   }
 
   function startAuto() {
-    if (allCells.length === 0 || !pipWindow) return;
+    if (orderedCells.length === 0 || !pipWindow) return;
     removePipIdleBar();
-    if (startCell) startCell.classList.remove('start-marker');
-    autoSequence = computeAutoSequence();
-    const keepProgress = autoSequence.some(c => c.classList.contains('used'));
-    autoPointer = keepProgress ? autoSequence.findIndex(c => !c.classList.contains('used')) : 0;
-    if (autoPointer === -1) autoPointer = autoSequence.length - 1;
+    sequence = buildSequence();
+    const keepProgress = orderedCells.some(c => c.classList.contains('used'));
+    autoPointer = keepProgress ? sequence.findIndex(c => !c.classList.contains('used')) : 0;
+    if (autoPointer === -1) autoPointer = sequence.length - 1;
     autoModeEnabled = true;
     currentHex = null;
     previousHex = null;
-    lastLineKey = null;
-    buildAutoOverlay();
-    activateCell(autoSequence[autoPointer]);
+    lastRow = null;
+    layoutPipView();
+    activateCell(sequence[autoPointer]);
+    ensureAutoOverlay();
     attachWatcher(pipWindow);
     startLiveTimer();
   }
 
-  function restartAuto() {
-    if (!autoModeEnabled) return;
-    autoSequence.forEach(c => c.classList.remove('used', 'current', 'next-preview'));
-    autoPointer = 0;
-    currentHex = null;
-    previousHex = null;
-    lastLineKey = null;
-    activateCell(autoSequence[0]);
-  }
-
-  function stopAuto() {
+  // showIdleBar=false is used when the popup itself is going away
+  function stopAuto(showIdleBar) {
+    if (showIdleBar === undefined) showIdleBar = true;
     autoModeEnabled = false;
     autoPointer = -1;
     currentHex = null;
     previousHex = null;
-    lastLineKey = null;
+    lastRow = null;
     awaitingReturn = false;
-    autoSequence.forEach(c => c.classList.remove('current', 'next-preview'));
+    orderedCells.forEach(c => c.classList.remove('current', 'next-preview'));
     detachWatcher(watchedWindow);
     removeAutoOverlay();
     stopLiveTimer();
-    if (pipWindow) ensurePipIdleBar();
+    if (showIdleBar && pipWindow) {
+      ensurePipIdleBar();
+      layoutPipView();
+    }
   }
 
   function saveSession() {
-    if (!loadedImageDataURL || allCells.length === 0) return;
-    const usedFlags = allCells.map(c => c.classList.contains('used'));
+    if (!loadedImageDataURL || orderedCells.length === 0) return;
+    const usedFlags = orderedCells.map(c => c.classList.contains('used'));
     const cellSize = currentGridWrap ? parseInt(currentGridWrap.dataset.cellSize, 10) : parseInt(cellSizeInput.value, 10);
     const data = {
       imageDataURL: loadedImageDataURL,
       gridW: gridDims.w, gridH: gridDims.h, cellSize,
+      startVertical, startHorizontal,
       usedFlags, savedAt: Date.now()
     };
     try {
@@ -781,8 +557,8 @@
   function startLiveTimer() {
     stopLiveTimer();
     liveTimerId = setInterval(() => {
-      if (overlayEls && overlayEls.agoEl && lastCopiedAt) {
-        overlayEls.agoEl.textContent = formatAgo(Date.now() - lastCopiedAt);
+      if (autoOverlayInstance && lastCopiedAt) {
+        autoOverlayInstance.agoEl.textContent = formatAgo(Date.now() - lastCopiedAt);
       }
     }, 500);
   }
@@ -790,402 +566,195 @@
     if (liveTimerId) { clearInterval(liveTimerId); liveTimerId = null; }
   }
 
-  // ---------- focus-return + keyboard shortcuts ----------
-
-  let pendingFocusAdvance = null;
-  let clickHandled = false;
-
-  function cancelPendingFocusAdvance() {
-    if (pendingFocusAdvance) { clearTimeout(pendingFocusAdvance); pendingFocusAdvance = null; }
-  }
+  // ---------- focus-return + keyboard shortcuts (popup only) ----------
 
   function onBlurHandler() { if (autoModeEnabled) awaitingReturn = true; }
   function onFocusHandler() {
-    if (autoModeEnabled && awaitingReturn) {
-      awaitingReturn = false;
-      cancelPendingFocusAdvance();
-      if (!clickHandled) {
-        pendingFocusAdvance = setTimeout(() => { 
-          pendingFocusAdvance = null; 
-          if (!clickHandled) goNext(); 
-        }, 300);
-      }
-    }
+    if (autoModeEnabled && awaitingReturn) { awaitingReturn = false; goNext(); }
   }
-
   function onKeyHandler(e) {
     if (!autoModeEnabled) return;
     if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goNext(); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); goBack(); }
     else if (e.key === 'Escape') { e.preventDefault(); stopAuto(); }
   }
-
   function attachWatcher(win) {
     detachWatcher(watchedWindow);
     watchedWindow = win;
     win.addEventListener('blur', onBlurHandler);
     win.addEventListener('focus', onFocusHandler);
     win.addEventListener('keydown', onKeyHandler);
-    win.addEventListener('click', (e) => {
-      cancelPendingFocusAdvance();
-      clickHandled = true;
-      setTimeout(() => clickHandled = false, 100);
-    }, true);
   }
-
   function detachWatcher(win) {
     if (!win) return;
     win.removeEventListener('blur', onBlurHandler);
     win.removeEventListener('focus', onFocusHandler);
     win.removeEventListener('keydown', onKeyHandler);
     if (win === watchedWindow) watchedWindow = null;
-    cancelPendingFocusAdvance();
   }
 
-  // ---------- auto mode overlay ----------
+  // ---------- translucent auto-mode overlay ----------
 
-  function buildAutoOverlay() {
-    if (!pipWindow) return;
-    removeAutoOverlay();
-    const doc = pipWindow.document;
-    const area = doc.querySelector('.pip-click-area');
-    if (!area) return;
+  function buildAutoOverlay(doc) {
+    const root = doc.createElement('div');
+    root.className = 'auto-overlay';
+    root.addEventListener('click', e => e.stopPropagation());
 
-    const overlay = doc.createElement('div');
-    overlay.className = 'auto-overlay';
+    const exitBtn = doc.createElement('button');
+    exitBtn.className = 'auto-overlay-exit';
+    exitBtn.textContent = '✕';
+    exitBtn.title = 'Exit auto mode';
 
-    const scrim = doc.createElement('div');
-    scrim.className = 'scrim';
+    const curBlock = doc.createElement('div');
+    curBlock.className = 'auto-swatch-block';
+    const currentSwatch = doc.createElement('div');
+    currentSwatch.className = 'auto-swatch current';
+    const currentHexEl = doc.createElement('div');
+    currentHexEl.className = 'auto-hex';
+    curBlock.appendChild(currentSwatch);
+    curBlock.appendChild(currentHexEl);
 
-    const header = doc.createElement('div');
-    header.className = 'auto-overlay-header';
+    const familyBadge = doc.createElement('div');
+    familyBadge.className = 'auto-family-badge';
+    const familyDot = doc.createElement('span');
+    familyDot.className = 'auto-family-dot';
+    const familyText = doc.createElement('span');
+    familyBadge.appendChild(familyDot);
+    familyBadge.appendChild(familyText);
 
-    const icon = doc.createElement('div');
-    icon.className = 'auto-icon';
+    const prevBlock = doc.createElement('div');
+    prevBlock.className = 'auto-swatch-block';
+    const prevSwatch = doc.createElement('div');
+    prevSwatch.className = 'auto-swatch previous';
+    const prevHexEl = doc.createElement('div');
+    prevHexEl.className = 'auto-hex';
+    prevBlock.appendChild(prevSwatch);
+    prevBlock.appendChild(prevHexEl);
 
-    const headerText = doc.createElement('div');
-    headerText.className = 'auto-header-text';
+    const statusBlock = doc.createElement('div');
+    statusBlock.className = 'auto-status-block';
     const progressEl = doc.createElement('div');
-    progressEl.className = 'auto-progress-text';
+    progressEl.className = 'auto-progress';
     const agoEl = doc.createElement('div');
-    agoEl.className = 'auto-ago-text';
-    headerText.appendChild(progressEl);
-    headerText.appendChild(agoEl);
-
-    const spacer = doc.createElement('div');
-    spacer.className = 'auto-header-spacer';
-
-    const soundBtn = doc.createElement('button');
-    soundBtn.className = 'auto-control-btn';
-    soundBtn.type = 'button';
-
-    const hoverBtn = doc.createElement('button');
-    hoverBtn.className = 'auto-control-btn';
-    hoverBtn.type = 'button';
-    hoverBtn.textContent = 'Hover';
-    hoverBtn.title = 'Toggle hover mode — advance by hovering the box below';
+    agoEl.className = 'auto-ago';
+    statusBlock.appendChild(progressEl);
+    statusBlock.appendChild(agoEl);
 
     const backBtn = doc.createElement('button');
-    backBtn.className = 'auto-control-btn';
-    backBtn.type = 'button';
+    backBtn.className = 'auto-nav-btn';
     backBtn.textContent = '↩ Undo';
-    backBtn.title = 'Go back one step';
 
-    const restartBtn = doc.createElement('button');
-    restartBtn.className = 'auto-control-btn';
-    restartBtn.type = 'button';
-    restartBtn.textContent = '↺ Restart';
-    restartBtn.title = 'Restart from beginning';
+    const soundLabel = doc.createElement('label');
+    soundLabel.className = 'auto-sound-toggle';
+    const soundToggle = doc.createElement('input');
+    soundToggle.type = 'checkbox';
+    soundLabel.appendChild(soundToggle);
+    soundLabel.appendChild(doc.createTextNode('Sound'));
 
-    const closeBtn = doc.createElement('button');
-    closeBtn.className = 'auto-control-btn close';
-    closeBtn.type = 'button';
-    closeBtn.textContent = '✕ Exit';
-    closeBtn.title = 'Exit auto mode';
-
-    header.appendChild(icon);
-    header.appendChild(headerText);
-    header.appendChild(spacer);
-    header.appendChild(soundBtn);
-    header.appendChild(hoverBtn);
-    header.appendChild(backBtn);
-    header.appendChild(restartBtn);
-    header.appendChild(closeBtn);
-
-    const clickArea = doc.createElement('div');
-    clickArea.className = 'auto-click-area';
-
-    const flash = doc.createElement('div');
-    flash.className = 'auto-flash';
-
-    const hoverZone = doc.createElement('div');
-    hoverZone.className = 'hover-zone';
-    const hzIcon = doc.createElement('div');
-    hzIcon.className = 'hz-icon';
-    hzIcon.textContent = '□';
-    const hzLabel = doc.createElement('div');
-    hzLabel.textContent = 'Hover to advance';
-    hoverZone.appendChild(hzIcon);
-    hoverZone.appendChild(hzLabel);
-
-    clickArea.appendChild(hoverZone);
-    clickArea.appendChild(flash);
-
-    const footer = doc.createElement('div');
-    footer.className = 'auto-footer';
     const saveBtn = doc.createElement('button');
-    saveBtn.className = 'auto-control-btn';
-    saveBtn.type = 'button';
-    saveBtn.textContent = 'Save & exit';
-    footer.appendChild(saveBtn);
+    saveBtn.className = 'auto-save-btn';
+    saveBtn.textContent = 'Save & Exit';
 
-    overlay.appendChild(scrim);
-    overlay.appendChild(header);
-    overlay.appendChild(clickArea);
-    overlay.appendChild(footer);
-    area.appendChild(overlay);
+    const hint = doc.createElement('div');
+    hint.className = 'auto-hint';
+    hint.textContent = '👆 Click anywhere to copy the next color';
 
-    // Prevent button clicks from advancing
-    [header, footer].forEach(el => {
-      el.addEventListener('click', e => e.stopPropagation());
+    root.appendChild(exitBtn);
+    root.appendChild(curBlock);
+    root.appendChild(familyBadge);
+    root.appendChild(prevBlock);
+    root.appendChild(statusBlock);
+    root.appendChild(backBtn);
+    root.appendChild(soundLabel);
+    root.appendChild(saveBtn);
+    root.appendChild(hint);
+
+    exitBtn.addEventListener('click', () => stopAuto());
+    backBtn.addEventListener('click', goBack);
+    saveBtn.addEventListener('click', () => { saveSession(); stopAuto(); });
+    soundToggle.addEventListener('change', () => {
+      soundEnabled = soundToggle.checked;
+      updateAutoOverlay();
     });
 
-    clickArea.addEventListener('click', (e) => {
-      if (e.target === hoverZone || hoverZone.contains(e.target)) return;
-      goNext();
-    });
+    return { root, currentSwatch, currentHexEl, familyDot, familyText, prevSwatch, prevHexEl, progressEl, agoEl, backBtn, soundToggle };
+  }
 
-    hoverZone.addEventListener('click', e => e.stopPropagation());
-    hoverZone.addEventListener('mouseenter', () => {
-      if (hoverModeEnabled) {
-        cancelPendingFocusAdvance();
-        goNext();
-      }
-    });
-
-    soundBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      soundEnabled = !soundEnabled;
-      updateOverlay();
-    });
-
-    hoverBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      hoverModeEnabled = !hoverModeEnabled;
-      updateOverlay();
-    });
-
-    backBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      goBack();
-    });
-
-    restartBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      restartAuto();
-    });
-
-    closeBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      stopAuto();
-    });
-
-    saveBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      saveSession();
-      stopAuto();
-    });
-
-    overlayEls = { overlay, icon, progressEl, agoEl, soundBtn, hoverBtn, hoverZone, backBtn, restartBtn, flash };
-    updateOverlay();
+  function ensureAutoOverlay() {
+    if (!pipWindow) return;
+    removeAutoOverlay();
+    const area = pipWindow.document.querySelector('.pip-click-area');
+    if (!area) return;
+    area.classList.add('auto-active');
+    autoOverlayInstance = buildAutoOverlay(pipWindow.document);
+    area.appendChild(autoOverlayInstance.root);
+    updateAutoOverlay();
   }
 
   function removeAutoOverlay() {
-    if (overlayEls && overlayEls.overlay) overlayEls.overlay.remove();
-    overlayEls = null;
-  }
-
-  function updateOverlay() {
-    if (!overlayEls) return;
-    overlayEls.progressEl.textContent = autoSequence.length ? `${autoPointer + 1} / ${autoSequence.length}` : '';
-    overlayEls.agoEl.textContent = lastCopiedAt ? formatAgo(Date.now() - lastCopiedAt) : '';
-    overlayEls.icon.style.background = currentHex || '#888888';
-    overlayEls.soundBtn.textContent = soundEnabled ? '🔊 Sound' : '🔇 Muted';
-    overlayEls.backBtn.disabled = autoPointer <= 0;
-    
-    if (overlayEls.hoverZone) {
-      if (hoverModeEnabled) {
-        overlayEls.hoverZone.classList.add('active');
-      } else {
-        overlayEls.hoverZone.classList.remove('active');
-      }
-    }
-    if (overlayEls.hoverBtn) {
-      if (hoverModeEnabled) {
-        overlayEls.hoverBtn.classList.add('active');
-      } else {
-        overlayEls.hoverBtn.classList.remove('active');
-      }
+    if (autoOverlayInstance) { autoOverlayInstance.root.remove(); autoOverlayInstance = null; }
+    if (pipWindow) {
+      const area = pipWindow.document.querySelector('.pip-click-area');
+      if (area) area.classList.remove('auto-active');
     }
   }
 
-  function flashBand(name, color) {
-    if (!overlayEls || !overlayEls.flash) return;
-    const el = overlayEls.flash;
-    el.textContent = name;
-    el.style.color = color;
-    el.classList.remove('show');
-    void el.offsetWidth;
-    el.classList.add('show');
-    clearTimeout(el._timer);
-    el._timer = setTimeout(() => el.classList.remove('show'), 450);
+  function updateAutoOverlay() {
+    if (!autoOverlayInstance) return;
+    const p = autoOverlayInstance;
+    p.progressEl.textContent = sequence.length ? `${autoPointer + 1} / ${sequence.length}` : '';
+    p.agoEl.textContent = lastCopiedAt ? formatAgo(Date.now() - lastCopiedAt) : '';
+    p.currentSwatch.style.background = currentHex || 'transparent';
+    p.currentHexEl.textContent = currentHex || '—';
+    p.prevSwatch.style.background = previousHex || 'transparent';
+    p.prevHexEl.textContent = previousHex || '—';
+    p.backBtn.disabled = autoPointer <= 0;
+    p.soundToggle.checked = soundEnabled;
+
+    const cell = sequence[autoPointer];
+    const familyHex = cell ? cell.dataset.familyHex : '';
+    const familyName = cell ? cell.dataset.family : '';
+    p.familyDot.style.background = familyHex || 'transparent';
+    p.familyText.textContent = familyName || '—';
   }
 
-  // ---------- popup idle controls ----------
+  // ---------- pip idle bar (popup open, auto mode not running) ----------
 
   function ensurePipIdleBar() {
     if (!pipWindow) return;
     removePipIdleBar();
-    const doc = pipWindow.document;
-    const bar = doc.createElement('div');
+    const bar = pipWindow.document.createElement('div');
     bar.className = 'pip-idle-bar';
+    bar.addEventListener('click', e => e.stopPropagation());
 
-    // Info row
-    const topRow = doc.createElement('div');
-    topRow.className = 'pip-idle-row';
+    const info = pipWindow.document.createElement('span');
+    info.textContent = `${gridDims.w} × ${gridDims.h} — ${orderedCells.length} squares`;
 
-    const info = doc.createElement('span');
-    info.className = 'pip-idle-info';
-    info.textContent = `${gridDims.w} × ${gridDims.h} — ${allCells.length} squares — Click squares to copy colors individually`;
-
-    const startIndicator = doc.createElement('div');
-    startIndicator.className = 'start-indicator' + (startCell ? ' picked' : '');
-    const startText = doc.createElement('span');
-    startText.className = 'start-indicator-text';
-    startText.textContent = startCell
-      ? `Start: col ${+startCell.dataset.gx + 1}, row ${+startCell.dataset.gy + 1}`
-      : 'Click a square to set start point';
-    startIndicator.appendChild(startText);
-    if (startCell) {
-      const clearBtn = doc.createElement('button');
-      clearBtn.className = 'start-clear-btn';
-      clearBtn.type = 'button';
-      clearBtn.textContent = '✕';
-      clearBtn.title = 'Clear start point';
-      clearBtn.addEventListener('click', () => {
-        startCell.classList.remove('start-marker');
-        startCell = null;
-        ensurePipIdleBar();
-      });
-      startIndicator.appendChild(clearBtn);
-    }
-
-    topRow.appendChild(info);
-    topRow.appendChild(startIndicator);
-
-    // Direction section
-    const dirSection = doc.createElement('div');
-    dirSection.className = 'dir-section';
-    
-    const dirLabel = doc.createElement('div');
-    dirLabel.className = 'dir-section-label';
-    dirLabel.textContent = 'Direction';
-    dirSection.appendChild(dirLabel);
-
-    const dirButtons = doc.createElement('div');
-    dirButtons.className = 'dir-buttons';
-
-    const dirs = [
-      { key: 'down', glyph: '↓', label: 'Down' },
-      { key: 'up', glyph: '↑', label: 'Up' },
-      { key: 'right', glyph: '→', label: 'Right' },
-      { key: 'left', glyph: '←', label: 'Left' }
-    ];
-    
-    dirs.forEach(d => {
-      const b = doc.createElement('button');
-      b.type = 'button';
-      b.className = 'dir-btn';
-      if (direction === d.key) b.style.background = '#f2f2f3';
-      const glyph = doc.createElement('span');
-      glyph.className = 'glyph';
-      glyph.textContent = d.glyph;
-      b.appendChild(glyph);
-      b.appendChild(doc.createTextNode(d.label));
-      b.addEventListener('click', () => {
-        direction = d.key;
-        if (!isRowDirection() && !nextRowDirection) {
-          nextRowDirection = 'down'; // Default for horizontal
-        }
-        ensurePipIdleBar();
-      });
-      dirButtons.appendChild(b);
+    const vSelect = pipWindow.document.createElement('select');
+    [['top', 'Start: Top'], ['bottom', 'Start: Bottom']].forEach(([v, l]) => {
+      const o = pipWindow.document.createElement('option'); o.value = v; o.textContent = l; vSelect.appendChild(o);
     });
+    vSelect.value = startVertical;
+    vSelect.addEventListener('change', () => { startVertical = vSelect.value; });
 
-    dirSection.appendChild(dirButtons);
+    const hSelect = pipWindow.document.createElement('select');
+    [['left', 'From: Left'], ['right', 'From: Right']].forEach(([v, l]) => {
+      const o = pipWindow.document.createElement('option'); o.value = v; o.textContent = l; hSelect.appendChild(o);
+    });
+    hSelect.value = startHorizontal;
+    hSelect.addEventListener('change', () => { startHorizontal = hSelect.value; });
 
-    // Next row direction (only for horizontal directions)
-    if (!isRowDirection()) {
-      const nextRowSection = doc.createElement('div');
-      nextRowSection.className = 'dir-section';
-      
-      const nextRowLabel = doc.createElement('div');
-      nextRowLabel.className = 'dir-section-label';
-      nextRowLabel.textContent = 'Next column direction';
-      nextRowSection.appendChild(nextRowLabel);
+    const startBtn = pipWindow.document.createElement('button');
+    startBtn.className = 'accent-btn';
+    startBtn.textContent = 'Start Auto Mode';
+    startBtn.addEventListener('click', () => startAuto());
 
-      const nextRowButtons = doc.createElement('div');
-      nextRowButtons.className = 'dir-buttons';
-
-      const rowDirs = [
-        { key: 'down', glyph: '↓', label: 'Down' },
-        { key: 'up', glyph: '↑', label: 'Up' }
-      ];
-      
-      rowDirs.forEach(d => {
-        const b = doc.createElement('button');
-        b.type = 'button';
-        b.className = 'dir-btn';
-        if (nextRowDirection === d.key) b.style.background = '#f2f2f3';
-        const glyph = doc.createElement('span');
-        glyph.className = 'glyph';
-        glyph.textContent = d.glyph;
-        b.appendChild(glyph);
-        b.appendChild(doc.createTextNode(d.label));
-        b.addEventListener('click', () => {
-          nextRowDirection = d.key;
-          ensurePipIdleBar();
-        });
-        nextRowButtons.appendChild(b);
-      });
-
-      nextRowSection.appendChild(nextRowButtons);
-      dirSection.appendChild(nextRowSection);
-    }
-
-    // Auto start button
-    const startButtonRow = doc.createElement('div');
-    startButtonRow.className = 'pip-idle-row';
-    
-    const startAutoBtn = doc.createElement('button');
-    startAutoBtn.className = 'auto-start-btn';
-    startAutoBtn.type = 'button';
-    startAutoBtn.textContent = 'Start Auto Mode';
-    startAutoBtn.addEventListener('click', startAuto);
-    startButtonRow.appendChild(startAutoBtn);
-    dirSection.appendChild(startButtonRow);
-
-    bar.appendChild(topRow);
-    bar.appendChild(dirSection);
-    doc.body.insertBefore(bar, doc.body.firstChild);
+    bar.appendChild(info);
+    bar.appendChild(vSelect);
+    bar.appendChild(hSelect);
+    bar.appendChild(startBtn);
+    pipWindow.document.body.insertBefore(bar, pipWindow.document.body.firstChild);
     pipIdleBarEl = bar;
-  }
-
-  function selectStartCell(cell) {
-    if (startCell) startCell.classList.remove('start-marker');
-    startCell = cell;
-    startCell.classList.add('start-marker');
-    ensurePipIdleBar();
   }
 
   function removePipIdleBar() {
@@ -1202,7 +771,6 @@
       c.style.width = cellSize + 'px';
       c.style.height = cellSize + 'px';
     });
-
     gridWrap.querySelectorAll('.calibration-row').forEach(calRow => {
       calRow.style.gridTemplateColumns = `repeat(${gridW}, ${cellSize}px)`;
       calRow.querySelectorAll('.calibration-cell').forEach(c => {
@@ -1212,12 +780,14 @@
     });
   }
 
+  // fits the whole grid, plus both reference rows, inside the popup with
+  // no cropping or scrolling — recalculated on every resize
   function layoutPipView() {
     if (!pipWindow || !currentGridWrap) return;
     const area = pipWindow.document.querySelector('.pip-click-area');
     if (!area) return;
     const gridW = gridDims.w, gridH = gridDims.h;
-    const totalRows = gridH + 2;
+    const totalRows = gridH + 2; // top + bottom reference rows
 
     const availW = Math.max(20, area.clientWidth - 16);
     const availH = Math.max(20, area.clientHeight - 16);
@@ -1246,6 +816,7 @@
       if (!area) {
         area = pipWindow.document.createElement('div');
         area.className = 'pip-click-area';
+        area.addEventListener('click', () => { if (autoModeEnabled) goNext(); });
         pipWindow.document.body.appendChild(area);
       }
       area.querySelectorAll('.grid-wrap').forEach(el => el.remove());
@@ -1282,15 +853,15 @@
     const gridH = parseInt(currentGridWrap.dataset.gridH, 10);
     const cellSize = parseInt(currentGridWrap.dataset.cellSize, 10);
     mountGrid(currentGridWrap, gridW, gridH, cellSize);
-    ensurePipIdleBar();
 
     pipWindow.addEventListener('resize', onPipResize);
+    ensurePipIdleBar();
+    layoutPipView();
 
     pipWindow.addEventListener('pagehide', () => {
-      if (autoModeEnabled) stopAuto();
+      stopAuto(false);
       pipWindow = null;
       pipIdleBarEl = null;
-      overlayEls = null;
       stage.innerHTML = '';
       stage.appendChild(currentGridWrap);
       restoreManualCellSize();
@@ -1299,9 +870,11 @@
     return pipWindow;
   }
 
-  // ---------- manual cell click ----------
+  // ---------- cell click handling ----------
 
-  function handleManualCellClick(cell) {
+  function handleCellClick(index) {
+    if (autoModeEnabled) return; // the popup's click-area listener handles advancing
+    const cell = orderedCells[index];
     const hex = cell.dataset.hex;
     const win = cell.ownerDocument.defaultView;
     copyToClipboard(hex, win).then(ok => {
@@ -1316,18 +889,16 @@
     const row = document.createElement('div');
     row.className = 'calibration-row';
     row.style.gridTemplateColumns = `repeat(${gridW}, ${cellSize}px)`;
-
     const centerXs = gridW % 2 === 1 ? [(gridW - 1) / 2] : [gridW / 2 - 1, gridW / 2];
 
     for (let x = 0; x < gridW; x++) {
-      const hex = bandColorFor(x, gridW);
+      const hex = cycleColorFor(x, gridW);
       const sq = document.createElement('div');
       sq.className = 'cell calibration-cell';
       sq.style.width = cellSize + 'px';
       sq.style.height = cellSize + 'px';
       sq.style.background = hex;
-      sq.style.cursor = 'default';
-      sq.title = 'Alignment reference — not copyable';
+      sq.title = hex + ' — alignment reference, not copyable';
       if (centerXs.includes(x)) sq.classList.add('center-mark-cell');
       row.appendChild(sq);
     }
@@ -1345,8 +916,7 @@
       pixelData = ctx.getImageData(0, 0, gridW, gridH).data;
     } catch (err) { return null; }
 
-    allCells = [];
-    startCell = null;
+    orderedCells = [];
     gridDims = { w: gridW, h: gridH };
 
     const gridWrap = document.createElement('div');
@@ -1372,26 +942,27 @@
         cell.dataset.hex = hex;
         cell.dataset.gx = x;
         cell.dataset.gy = y;
-        // FIXED: Checkmark color matches the band color
-        cell.style.setProperty('--check-color', bandColorHexFor(x, gridW));
 
-        cell.addEventListener('click', () => {
-          if (autoModeEnabled) return;
-          if (pipWindow && cell.ownerDocument === pipWindow.document) {
-            selectStartCell(cell);
-          } else {
-            handleManualCellClick(cell);
-          }
-        });
-        allCells.push(cell);
+        // checkmark color, and the auto-mode family badge, match the
+        // reference rows' expected color for this column
+        const famHex = cycleColorFor(x, gridW);
+        cell.dataset.familyHex = famHex;
+        cell.dataset.family = RGB_NAMES[famHex];
+        cell.style.setProperty('--check-color', famHex);
+
+        const cellIndex = orderedCells.length;
+        cell.addEventListener('click', () => handleCellClick(cellIndex));
+        orderedCells.push(cell);
 
         grid.appendChild(cell);
       }
     }
 
-    gridWrap.appendChild(buildCalibrationRow(gridW, cellSize));
+    const calibrationTop = buildCalibrationRow(gridW, cellSize);
+    const calibrationBottom = buildCalibrationRow(gridW, cellSize);
+    gridWrap.appendChild(calibrationTop);
     gridWrap.appendChild(grid);
-    gridWrap.appendChild(buildCalibrationRow(gridW, cellSize));
+    gridWrap.appendChild(calibrationBottom);
 
     return gridWrap;
   }
@@ -1431,27 +1002,33 @@
     resumeBannerSlot.appendChild(banner);
   }
 
-  function resumeSession(data) {
+  async function resumeSession(data) {
     const img = new Image();
-    img.onload = () => {
+    img.onload = async () => {
       loadedImage = img;
       loadedImageDataURL = data.imageDataURL;
       generateBtn.disabled = false;
       widthInput.value = data.gridW;
       heightInput.value = data.gridH;
       cellSizeInput.value = data.cellSize;
+      startVertical = data.startVertical || 'top';
+      startHorizontal = data.startHorizontal || 'left';
 
+      stopAuto(false);
       const gridWrap = buildGridFromImage(img, data.gridW, data.gridH, data.cellSize);
       if (!gridWrap) return;
 
       if (Array.isArray(data.usedFlags)) {
         data.usedFlags.forEach((used, i) => {
-          if (used && allCells[i]) allCells[i].classList.add('used');
+          if (used && orderedCells[i]) orderedCells[i].classList.add('used');
         });
       }
 
       mountGrid(gridWrap, data.gridW, data.gridH, data.cellSize);
       infoText.textContent = `${data.gridW} × ${data.gridH} = ${data.gridW * data.gridH} blocks`;
+
+      if ('documentPictureInPicture' in window) await openPip();
+      startAuto();
     };
     img.src = data.imageDataURL;
   }
@@ -1496,7 +1073,7 @@
     const gridH = Math.max(1, Math.min(256, parseInt(heightInput.value, 10) || 32));
     const cellSize = Math.max(4, Math.min(64, parseInt(cellSizeInput.value, 10) || 22));
 
-    if (pipWindow) pipWindow.close();
+    stopAuto(false);
     const gridWrap = buildGridFromImage(loadedImage, gridW, gridH, cellSize);
     if (!gridWrap) {
       stage.innerHTML = '<div class="placeholder">Could not read image data (possibly a cross-origin image).</div>';
@@ -1504,6 +1081,7 @@
     }
     mountGrid(gridWrap, gridW, gridH, cellSize);
     infoText.textContent = `${gridW} × ${gridH} = ${gridW * gridH} blocks`;
+    if (pipWindow) ensurePipIdleBar();
   });
 
   pipBtn.addEventListener('click', async () => {
